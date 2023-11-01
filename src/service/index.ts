@@ -1,5 +1,5 @@
 
-import { refreshToken, isDev, isTesting } from '@/utils'
+import { refreshToken, isDev, isTesting, isPre, isProd } from '@/utils'
 import Axios, { AxiosRequestConfig } from 'axios'
 
 const axios = Axios.create({
@@ -8,13 +8,14 @@ const axios = Axios.create({
 })
 
 function getBaseUrl() {
-  if (isDev()) return ''
-  return 'https://api.uboxol.com'
+  if (isPre() || isProd()) return 'https://api.uboxol.com'
+  if (isTesting()) return 'https://api.dev.uboxol.com'
+  return ''
 }
 const URL_PREFIX = '/escort'
 axios.interceptors.request.use(async (config) => {
   try {
-    if (isTesting()) {
+    if (isPre()) {
       config.params = {
         ...config.params,
         release: 'pre'

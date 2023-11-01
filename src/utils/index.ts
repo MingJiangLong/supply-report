@@ -15,6 +15,11 @@ export default function (callback: (env: string) => void) {
 export function isDev() {
   return import.meta.env.MODE === 'development'
 }
+
+export function isPre() {
+  return import.meta.env.MODE === 'pre'
+}
+
 export function isTesting() {
   return import.meta.env.MODE === 'testing'
 }
