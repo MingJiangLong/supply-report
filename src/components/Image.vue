@@ -2,36 +2,33 @@
   <div class="image-component-container">
     <div class="img-container">
       <input
-        v-if="!!!props.doneUrl"
-        type="file"
-        accept="image/*"
-        capture="environment"
-        @input="onInput"
-      />
+             v-if="!!!props.doneUrl"
+             type="file"
+             accept="image/*"
+             capture="environment"
+             @change="onInput" />
       <img
-        class="close"
-        v-if="props.doneUrl && !props.onlyDisplay"
-        @click="onDelete"
-        src="@/assets/img/btn_search_close.png"
-      />
+           class="close"
+           v-if="props.doneUrl && !props.onlyDisplay"
+           @click="onDelete"
+           src="@/assets/img/btn_search_close.png" />
       <img v-if="props.doneUrl" :src="props.doneUrl" @click="onImageClick" />
       <img v-else :src="notDoneImage" />
       <div class="upload-overlay" v-if="loading">处理中</div>
     </div>
     <div
-      :style="{
-        color: '#868686',
-        fontWeight: 400,
-        textAlign: 'center',
-      }"
-    >
+         :style="{
+           color: '#868686',
+           fontWeight: 400,
+           textAlign: 'center',
+         }">
       {{ props.desc }}
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import {} from "vue"
+import { } from "vue"
 import notDoneImage from "@/assets/img/pic_none.png"
 import { ref } from "vue"
 import { showToast } from "vant"
@@ -55,11 +52,14 @@ const emit = defineEmits<{
 }>()
 
 function readFileAsDateUrl(file: File): Promise<string> {
-  return new Promise<string>(s => {
+  return new Promise<string>((s, e) => {
     let reader = new FileReader()
     reader.readAsDataURL(file)
     reader.onload = function (_e) {
       s(reader.result as string)
+    }
+    reader.onerror = (error) => {
+      e(error)
     }
   })
 }
@@ -73,13 +73,20 @@ function onDelete() {
 }
 async function onInput(e: any) {
   try {
+    console.log("onInput", "INPUT调用");
+
     loading.value = true
     let file = e.target.files[0] as File
+    console.log("onInput", file);
+
     const imageSource = await readFileAsDateUrl(file)
+    console.log("imageSource", file);
     const image = new Image()
 
     image.src = imageSource
-
+    image.onerror = (error) => {
+      console.log("image.onerror", error);
+    }
     image.onload = async function () {
       let sn = initSN(true)
       let newImage = await addWatermark(image, [
@@ -122,6 +129,7 @@ const loading = ref(false)
 
 <style scoped lang="less">
 @image-size: 100px;
+
 input {
   position: absolute;
   top: 0;
@@ -132,11 +140,13 @@ input {
   cursor: pointer;
   opacity: 0;
 }
+
 img {
   width: 99px;
   height: 99px;
   border-radius: 8px;
 }
+
 .img-container {
   width: @image-size;
   height: @image-size;
@@ -147,10 +157,12 @@ img {
   // display: flex;
   // justify-content: center;
 }
+
 .image-component-container {
   font-size: 14px;
   font-weight: 500;
 }
+
 .upload-overlay {
   width: @image-size;
   height: @image-size;
@@ -162,7 +174,9 @@ img {
   text-align: center;
   line-height: @image-size;
 }
+
 @icon-size: 24px;
+
 .close {
   position: absolute;
   width: @icon-size;
