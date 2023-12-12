@@ -29,3 +29,8 @@ interface Goods {
   // replenishmentStock_temp: number
   mdseTypeId1: number
 }
+
+interface ImportMetaEnv {
+  readonly VUE_APP_API_HOST: string
+  // 更多环境变量...
+}
