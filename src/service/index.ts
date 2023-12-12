@@ -1,6 +1,6 @@
 
 import { API_HOST } from '@/config';
-import { refreshToken, isDev, isTesting, isPre, isProd } from '@/utils'
+import { refreshToken, isDev, isPre } from '@/utils'
 import Axios, { AxiosRequestConfig } from 'axios'
 
 console.log(API_HOST);
