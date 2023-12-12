@@ -1,1 +1,1 @@
-export const API_HOST = import.meta.env.VUE_APP_API_HOST
+export const API_HOST = import.meta.env.VITE_APP_API_HOST

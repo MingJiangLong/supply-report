@@ -1,18 +1,14 @@
 
+import { API_HOST } from '@/config';
 import { refreshToken, isDev, isTesting, isPre, isProd } from '@/utils'
 import Axios, { AxiosRequestConfig } from 'axios'
 
+console.log(API_HOST);
+
 const axios = Axios.create({
   timeout: 1000 * 6,
-  baseURL: getBaseUrl()
+  baseURL: API_HOST
 })
-
-function getBaseUrl() {
-  if (isPre() || isProd()) return 'https://api.uboxol.com'
-  if (isTesting()) return 'https://api.dev.uboxol.com'
-  return ''
-}
-const URL_PREFIX = '/escort'
 axios.interceptors.request.use(async (config) => {
   try {
     if (isPre()) {
@@ -54,7 +50,7 @@ axios.interceptors.response.use(async (data) => {
 })
 
 function post<T = any>(url: string, data?: { [k: string]: any }, config?: AxiosRequestConfig<any>): Promise<Response<T>> {
-  return axios.post(`${URL_PREFIX}${url}`, data, config);
+  return axios.post(url, data, config);
 }
 
 export function fetchGoodsInMachine(vmCode: string) {

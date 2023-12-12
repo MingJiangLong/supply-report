@@ -73,16 +73,11 @@ function onDelete() {
 }
 async function onInput(e: any) {
   try {
-    console.log("onInput", "INPUT调用");
 
     loading.value = true
     let file = e.target.files[0] as File
-    console.log("onInput", file);
-
     const imageSource = await readFileAsDateUrl(file)
-    console.log("imageSource", file);
     const image = new Image()
-
     image.src = imageSource
     image.onerror = (error) => {
       console.log("image.onerror", error);

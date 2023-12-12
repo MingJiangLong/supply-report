@@ -31,6 +31,6 @@ interface Goods {
 }
 
 interface ImportMetaEnv {
-  readonly VUE_APP_API_HOST: string
+  readonly VITE_APP_API_HOST: string
   // 更多环境变量...
 }
