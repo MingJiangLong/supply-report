@@ -15,7 +15,7 @@ export const useShareData = defineStore('shareData', {
       out_trade_no: '',
       sn: '',
       loginName: '',
-      imageBeforeOpen: '',
+      // imageBeforeOpen: '',
       isNormalSupply: true,
       imageInfoBeforeOpen: {
         url: '',
@@ -151,7 +151,7 @@ type State = {
   loginName: string
   displayImage: string
   reportImage: string
-  imageBeforeOpen: string
+  // imageBeforeOpen: string
 
   /** 常规补货 */
   isNormalSupply: boolean
