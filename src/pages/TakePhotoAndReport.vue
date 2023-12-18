@@ -40,8 +40,9 @@ import eg_big from "@/assets/img/eg_big.png"
 import { ref } from "vue"
 import { useRouter } from "vue-router"
 import { Button, showToast } from "vant"
-import { submit } from "@/service"
+import { normalSubmit, submit } from "@/service"
 import { initSN } from "@/utils"
+import { v4 as uuidV4 } from "uuid"
 const shareData = useShareData()
 const router = useRouter()
 const submitLoading = ref(false)
@@ -77,33 +78,55 @@ async function onSubmit() {
   try {
     if (haveSubmit.value) return
     submitLoading.value = true
-    const result = await submit({
-      vmCode: shareData.VM(),
-      moment: 1,
-      transactionId: shareData.TRANSACTION_ID(),
-      out_trade_no: shareData.OUT_TRADE_NO(),
-      sn: shareData.SN(),
-      loginName: shareData.LOGIN_NAME(),
-      productInfo: shareData.goodsList.map(item => ({
-        productId: item.productId,
-        productName: item.productName,
-        // 修正库存+(上次补货后库存/补货后库存)
-        // productCount: item.stock_temp + item.recommend_temp,
-        productCount: item.recommend_temp,
-      })),
-      pictures: shareData.imageAfterOpen(),
-      pictureTime: shareData.imageInfoAfterOpen.time,
-      prePictures: shareData.imageBeforeOpen(),
-      prePictureTime: shareData.imageInfoBeforeOpen.time,
-      inventory: shareData.isNormalSupply ? 0 : 1
-    })
+
+    let result: any
+    if (shareData.isNormalSupply) {
+      const transactionId = uuidV4()
+      const sn = initSN()
+      result = await normalSubmit({
+        vmCode: shareData.VM(),
+        transactionId,
+        sn,
+        loginName: shareData.LOGIN_NAME(),
+        productInfo: shareData.goodsList.map(item => ({
+          productId: item.productId,
+          productName: item.productName,
+          productCount: item.recommend_temp,
+        })),
+        out_trade_no: shareData.OUT_TRADE_NO(),
+        prePictures: shareData.imageInfoBeforeOpen.url,
+        prePictureTime: shareData.imageInfoBeforeOpen.time,
+        pictures: shareData.imageInfoAfterOpen.url,
+        pictureTime: shareData.imageInfoAfterOpen.time
+
+      })
+    } else {
+      result = await submit({
+        vmCode: shareData.VM(),
+        moment: 1,
+        transactionId: shareData.TRANSACTION_ID(),
+        out_trade_no: shareData.OUT_TRADE_NO(),
+        sn: shareData.SN(),
+        loginName: shareData.LOGIN_NAME(),
+        productInfo: shareData.goodsList.map(item => ({
+          productId: item.productId,
+          productName: item.productName,
+          productCount: item.recommend_temp,
+        })),
+        pictures: shareData.imageAfterOpen(),
+        pictureTime: shareData.imageInfoAfterOpen.time,
+      })
+
+    }
     if (result?.head?.code != 200) throw new Error(result?.head?.desc)
     haveSubmit.value = true
+
     showToast({
       message: "提交成功,3s后返回首页!",
       type: "success",
     })
     setTimeout(() => {
+      shareData.clear()
       window?.ucloud?.postMessage?.(
         JSON.stringify({ code: 10003, msg: "关闭页面" })
       )

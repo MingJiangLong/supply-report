@@ -61,6 +61,12 @@ export function fetchGoodsInMachine(vmCode: string) {
   })
 }
 
+
+/**
+ * 盘点提交
+ * @param data 
+ * @returns 
+ */
 export function submit(data: SubmitData) {
   return post(`/simple/supply/submit_stock`, data, {
     headers: {
@@ -68,6 +74,20 @@ export function submit(data: SubmitData) {
     },
   })
 }
+
+/**
+ * 常规提交
+ * @param data 
+ * @returns 
+ */
+export function normalSubmit(data: NormalSubmit) {
+  return post(`/simple/supply/submit_stock_normal`, data, {
+    headers: {
+      "Content-Type": 'application/json'
+    },
+  })
+}
+
 
 export function fetchUploadInfo(): Promise<Response<{
   accessKeyId: string
@@ -102,6 +122,20 @@ type SubmitData = {
   prePictureTime?: string // 补货前拍照时间
   /** 月度盘点字段，1是、0否 */
   inventory?: number
+
+}
+
+type NormalSubmit = {
+  vmCode: string
+  transactionId: string
+  out_trade_no: string
+  sn: string
+  loginName: string
+  prePictures: string
+  prePictureTime: string
+  pictures: string
+  pictureTime: string
+  productInfo: { productId: number; productName: string; productCount: number }[]
 
 }
 

@@ -37,7 +37,7 @@ import eg_big from "@/assets/img/eg_big.png"
 import Image from "@/components/Image.vue"
 import { useShareData } from "@/store";
 import { useRouter } from "vue-router";
-import { Button, showToast } from "vant";
+import { Button } from "vant";
 import { initSN, isDev } from "@/utils";
 import { onMounted } from "vue";
 import { URLHash } from 'ubox-util'
@@ -87,15 +87,7 @@ const loading = ref(false)
 async function onNextStep() {
 
   if (shareData.isNormalSupply) {
-    try {
-      loading.value = true
-      // await firstReport()
-      router.push("confirm-after-supply")
-    } catch (error: any) {
-      showToast({ message: error?.message, type: 'fail' })
-    } finally {
-      loading.value = false
-    }
+    router.push("confirm-after-supply")
   }
 
   if (!shareData.isNormalSupply) {

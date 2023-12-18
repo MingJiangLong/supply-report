@@ -142,9 +142,6 @@ main {
   padding: 0 8px;
 }
 
-// footer {
-//   padding: 8px 21px 8px;
-// }
 footer {
   display: flex;
   padding: 8px 21px 8px;

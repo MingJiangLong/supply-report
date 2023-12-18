@@ -122,10 +122,9 @@ export async function firstReport() {
       productIdentifyCount: item.stock
     })),
     sn,
-    inventory: 1,
     loginName: shareData.LOGIN_NAME(),
-    prePictures: shareData.imageBeforeOpen(),
-    prePictureTime: shareData.imageInfoBeforeOpen.time
+    pictures: shareData.imageBeforeOpen(),
+    pictureTime: shareData.imageInfoBeforeOpen.time
   })
   if (submitResult?.head?.code != 200)
     throw new Error(submitResult?.head?.desc)

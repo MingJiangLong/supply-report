@@ -125,6 +125,13 @@ export const useShareData = defineStore('shareData', {
         this.goodsList = [...temp[0].sort((a, b) => b.replenishmentStock - a.replenishmentStock), ...temp[1].sort((a, b) => b.replenishmentStock - a.replenishmentStock)]
       }
     },
+    clearPhoto() {
+      this.imageInfoBeforeOpen = { url: "", time: '' }
+      this.imageInfoAfterOpen = { url: "", time: '' }
+    },
+    clear() {
+      this.$reset()
+    }
 
   },
   persist: true,
