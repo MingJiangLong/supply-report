@@ -108,7 +108,7 @@ async function onInput(e: any) {
           loading.value = false
           emit("afterUpload", result?.url)
         })
-        .catch(() => {
+        .catch((error:any) => {
           loading.value = false
           showToast({ message: "上传失败", type: "fail" })
         })

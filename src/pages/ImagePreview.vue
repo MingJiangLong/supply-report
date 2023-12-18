@@ -1,3 +1,4 @@
+<!-- 图片预览页面 -->
 <template>
   <img :src="shareData.displayImage" @click="onGoBack" />
 </template>

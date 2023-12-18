@@ -1,33 +1,32 @@
 <template>
   <div class="steps">
-    <template v-for="(item, key) in steps" :key="key">
+    <template v-for="(item, key) in realSteps" :key="key">
       <div class="ignore-point-container">
         <div v-if="key < props.current" class="ignore-active"></div>
         <div
-          v-else
-          class="ignore-not-active"
-          :style="{ background: key <= $props.current ? '#ff7500' : '#d2d2d2' }"
-        ></div>
+             v-else
+             class="ignore-not-active"
+             :style="{ background: key <= $props.current ? '#ff7500' : '#d2d2d2' }"></div>
         <span
-          :style="{
-            color: key <= props.current ? '#ff7500' : '#d2d2d2',
-            fontWeight: key <= props.current ? '500' : '400',
-          }"
-          >{{ item }}</span
-        >
+              :style="{
+                color: key <= props.current ? '#ff7500' : '#d2d2d2',
+                fontWeight: key <= props.current ? '500' : '400',
+              }">{{ item }}</span>
       </div>
       <div
-        class="step-line"
-        v-if="key != steps.length - 1"
-        :style="{ background: key < props.current ? '#ff7500' : '#DADADA' }"
-      ></div>
+           class="step-line"
+           v-if="key != realSteps.length - 1"
+           :style="{ background: key < props.current ? '#ff7500' : '#DADADA' }"></div>
     </template>
   </div>
 </template>
 
 <script setup lang="ts">
-import { reactive } from "vue"
-const props = defineProps<{ current: number }>()
+import { reactive, computed } from "vue"
+const realSteps = computed(() => {
+  return props.steps ?? steps
+})
+const props = defineProps<{ current: number, steps?: string[] }>()
 const steps = reactive(["补货前确认", "补货后确认", "拍照上报"])
 </script>
 
@@ -42,6 +41,7 @@ const steps = reactive(["补货前确认", "补货后确认", "拍照上报"])
   padding: 0 40px;
   border-radius: 8px;
 }
+
 .step-item {
   width: 44px;
 }
@@ -52,12 +52,15 @@ span {
   width: 80px;
   text-align: center;
 }
+
 .step-line {
   flex: 1;
   height: 1px;
   margin: 0 20px;
 }
+
 @active-size: 18px;
+
 .ignore-point-container {
   display: flex;
   flex-direction: row;
@@ -70,6 +73,7 @@ span {
 }
 
 @not-active-size: 8px;
+
 .ignore-not-active {
   width: @not-active-size;
   height: @not-active-size;
@@ -85,6 +89,7 @@ span {
   width: @active-size;
   border-radius: @active-size;
   background: #ff7500;
+
   &:after {
     display: block;
     content: "\2713";
@@ -92,6 +97,7 @@ span {
     color: #ffffff;
   }
 }
+
 .step-line {
   height: 1px;
   width: 84px;

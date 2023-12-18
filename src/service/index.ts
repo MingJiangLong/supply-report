@@ -3,8 +3,6 @@ import { API_HOST } from '@/config';
 import { refreshToken, isDev, isPre } from '@/utils'
 import Axios, { AxiosRequestConfig } from 'axios'
 
-console.log(API_HOST);
-
 const axios = Axios.create({
   timeout: 1000 * 6,
   baseURL: API_HOST
@@ -99,6 +97,12 @@ type SubmitData = {
   sn: string
   loginName: string
   pictures?: string
+  pictureTime?: string    // 补货后拍照时间
+  prePictures?: string    // 补货前图片
+  prePictureTime?: string // 补货前拍照时间
+  /** 月度盘点字段，1是、0否 */
+  inventory?: number
+
 }
 
 type Response<T = any> = {

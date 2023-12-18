@@ -1,32 +1,29 @@
+<!-- 补货后拍照上传 -->
 <template>
   <main>
     <Location />
-    <Steps :current="2" />
+    <Steps :current="shareData.steps.length - 1" :steps="shareData.steps" />
     <Alarm message="关门后，拍照上报" />
     <div class="card">
       <h5>补货拍照上报</h5>
       <div class="row">
         <Image
-          :done-url="eg_small"
-          @on-image-click="onEGImagePreview"
-          desc="上报示意图"
-          only-display
-        />
+               :done-url="eg_small"
+               @on-image-click="onEGImagePreview"
+               desc="上报示意图"
+               only-display />
         <Image
-          @after-upload="onUpload"
-          :done-url="shareData.reportImage"
-          @on-delete="onDeleteImage"
-          @on-image-click="onImagePreview"
-          desc="拍照上报"
-        />
+               @after-upload="onUpload"
+               :done-url="shareData.imageInfoAfterOpen.url"
+               @on-delete="onDeleteImage"
+               @on-image-click="onImagePreview"
+               desc="拍照上报" />
       </div>
     </div>
   </main>
   <footer>
     <Button @click="onPreStep">上一步</Button>
-    <Button @click="onSubmit" :loading="submitLoading" :disabled="haveSubmit"
-      >提交</Button
-    >
+    <Button @click="onSubmit" :loading="submitLoading" :disabled="haveSubmit">提交</Button>
     <!-- <button @click="onPreStep">上一步</button>
     <button @click="onSubmit">提交</button> -->
   </footer>
@@ -44,17 +41,24 @@ import { ref } from "vue"
 import { useRouter } from "vue-router"
 import { Button, showToast } from "vant"
 import { submit } from "@/service"
-import { onMounted } from "vue"
+import { initSN } from "@/utils"
 const shareData = useShareData()
 const router = useRouter()
 const submitLoading = ref(false)
 const haveSubmit = ref(false)
 function onUpload(dataSource: string) {
-  shareData.reportImage = dataSource
+  shareData.imageInfoAfterOpen = {
+    url: dataSource,
+    time: initSN(true)
+  }
+  // shareData.reportImage = dataSource
 }
 
+
 function onDeleteImage() {
-  shareData.reportImage = ""
+  // shareData.reportImage = ""
+  shareData.imageInfoAfterOpen.time = ''
+  shareData.imageInfoAfterOpen.url = ''
 }
 
 function onEGImagePreview() {
@@ -62,7 +66,8 @@ function onEGImagePreview() {
   router.push("preview")
 }
 function onImagePreview() {
-  shareData.displayImage = shareData.reportImage
+  // shareData.displayImage = shareData.reportImage
+  shareData.displayImage = shareData.imageInfoAfterOpen.url
   router.push("preview")
 }
 function onPreStep() {
@@ -86,7 +91,11 @@ async function onSubmit() {
         // productCount: item.stock_temp + item.recommend_temp,
         productCount: item.recommend_temp,
       })),
-      pictures: shareData.REPORT_IMAGE(),
+      pictures: shareData.imageAfterOpen(),
+      pictureTime: shareData.imageInfoAfterOpen.time,
+      prePictures: shareData.imageBeforeOpen(),
+      prePictureTime: shareData.imageInfoBeforeOpen.time,
+      inventory: shareData.isNormalSupply ? 0 : 1
     })
     if (result?.head?.code != 200) throw new Error(result?.head?.desc)
     haveSubmit.value = true
@@ -109,9 +118,7 @@ async function onSubmit() {
   }
 }
 
-onMounted(() => {
-  // onUpload2()
-})
+
 </script>
 
 <style scoped lang="less">
@@ -120,14 +127,16 @@ footer {
   padding: 8px 21px 8px;
   gap: 6px 14px;
   font-size: 18px;
-  & > button:first-child {
+
+  &>button:first-child {
     background: #ffffff;
     color: #929292;
     border: 1px solid #d1d4de;
     border-radius: 25px;
     flex: 1;
   }
-  & > button:last-child {
+
+  &>button:last-child {
     background: var(--ubox-btn-background);
     border-radius: 25px;
     color: #ffffff;
@@ -135,11 +144,13 @@ footer {
     border: none;
   }
 }
-.component-container {
-}
+
+.component-container {}
+
 .card {
   padding: 23px 14px;
-  & > h5 {
+
+  &>h5 {
     padding: 0;
     margin: 0;
     font-size: 16px;

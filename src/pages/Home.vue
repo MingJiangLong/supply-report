@@ -1,7 +1,8 @@
+<!-- !第二版之后，此页面不再作为首页 补货前盘点 -->
 <template>
   <main>
     <Location />
-    <Steps :current="0" />
+    <Steps :current="1" :steps="COUNT_SUPPLY_STEPS" />
     <Alarm message="开门后，确认库存" />
     <div class="card">
       <div class="row card-head" style="background: #fff8f3">
@@ -23,36 +24,31 @@
             </div>
             <div v-if="item.status != 'editing'">{{ item.stock_temp }}</div>
             <div
-              v-if="item.status != 'editing'"
-              class="icon row"
-              @click="onEditBtnClick(key)"
-            >
+                 v-if="item.status != 'editing'"
+                 class="icon row"
+                 @click="onEditBtnClick(key)">
               <img src="@/assets/img/icon_edit.png" />
               <span>修正库存</span>
             </div>
             <div style="flex: 11" v-if="item.status == 'editing'">
               <Stepper
-                :min="0"
-                :max="999"
-                :default-value="item.stock_temp"
-                @change="
-                  v => {
-                    onStepperChange(key, v)
-                  }
-                "
-              />
+                       :min="0"
+                       :max="999"
+                       :default-value="item.stock_temp"
+                       @change="v => {
+                         onStepperChange(key, v)
+                       }
+                         " />
             </div>
           </div>
           <div class="row card-main">
             <div style="flex: 1">该商品库存核对状态:</div>
             <div
-              :class="
-                item.status != undefined
-                  ? 'hairline-btn-disable'
-                  : 'hairline-btn'
-              "
-              @click="onConfirmStore(key)"
-            >
+                 :class="item.status != undefined
+                   ? 'hairline-btn-disable'
+                   : 'hairline-btn'
+                   "
+                 @click="onConfirmStore(key)">
               {{ item.status != undefined ? "已确认" : "确认库存" }}
             </div>
           </div>
@@ -62,12 +58,12 @@
     </div>
   </main>
   <footer>
+    <Button @click="() => router.back()">上一步</Button>
     <Button
-      @click="onBottomBtnClick"
-      :loading="submitLoading"
-      class="bottom-btn"
-      >核对无误,开始补货</Button
-    >
+            @click="onBottomBtnClick"
+            :loading="submitLoading"
+            :disabled="!isNextAble"
+            class="bottom-btn">核对无误,开始补货</Button>
   </footer>
 </template>
 
@@ -75,68 +71,45 @@
 import Alarm from "@/components/Alarm.vue"
 import Location from "@/components/Location.vue"
 import Steps from "@/components/Steps.vue"
-import { submit } from "@/service"
-import { getPathBaseParams, initSN } from "@/utils"
-import { onMounted, ref } from "vue"
+import { firstReport } from "@/utils"
+import { computed,  ref } from "vue"
 import { useRouter } from "vue-router"
-import { Stepper, Button, List } from "vant"
+import { Stepper, Button, List, } from "vant"
 import { showToast } from "vant"
 import { useShareData } from "@/store"
-// @ts-ignore
-import { v4 as uuidV4 } from "uuid"
+import { COUNT_SUPPLY_STEPS } from "@/config"
 const router = useRouter()
 const shareData = useShareData()
 const submitLoading = ref(false)
 const listLoading = ref(false)
-
+/** 商品库存数量控件值变化同步数量 */
 function onStepperChange(index: number, value: number) {
   let goods = shareData.goodsList[index]
   if (!goods) return
   goods.stock_temp = value
 }
+
+const isNextAble = computed(() => {
+  return shareData.goodsList.every(item => item.status)
+})
+/** 点击编辑库存按钮 */
 function onEditBtnClick(index: number, status = "editing") {
   let goods = shareData.goodsList[index]
   if (!goods) return
   goods["status"] = status
 }
 
-/** 核对无误，开始补货 */
+/**
+ * 点击 `核对无误，开始补货`按钮;
+ * 补货需要`两次上报`此为第一次;
+ * 上报需要前端生成 `transactionId` 和 `sn`,第二次上报需要传第一次上报生成的`transactionId` 和 `sn`;
+ * 上报完成之后,缓存商品信息增加 `recommend`推荐补货数和`recommend_temp`补货后库存;
+ */
 async function onBottomBtnClick() {
   try {
     submitLoading.value = true
-    const transactionId = uuidV4()
-    const sn = initSN()
-    const submitResult = await submit({
-      vmCode: shareData.VM(),
-      moment: 0,
-      transactionId,
-      out_trade_no: shareData.OUT_TRADE_NO(),
-      productInfo: shareData.goodsList.map(item => ({
-        productId: item.productId,
-        productName: item.productName,
-        productCount: item.stock_temp,
-        productIdentifyCount:item.stock
-      })),
-      sn,
-      loginName: shareData.LOGIN_NAME(),
-    })
-    if (submitResult?.head?.code != 200)
-      throw new Error(submitResult?.head?.desc)
-
-    shareData.goodsList = shareData.goodsList.map(item => {
-      /** 推荐补货数 =  上次补货后库存 - 修正库存*/
-      let temp = item.replenishmentStock - item.stock_temp
-      return {
-        ...item,
-        recommend: temp >= 0 ? temp : 0,// 推荐补货数
-        recommend_temp: item.replenishmentStock,// 补货后库存
-      }
-    })
-    // 保存sn和transaction
-    shareData.transactionId = transactionId
-    shareData.sn = sn
-    showToast({ message: "提交成功", type: "success" })
-    router.push("/confirmAfterSupply")
+    await firstReport()
+    router.push("confirm-after-supply")
   } catch (error: any) {
     showToast({
       message: error?.message,
@@ -152,23 +125,6 @@ function onConfirmStore(index: number) {
   if (!goods) return
   goods["status"] = "edited"
 }
-
-function initPathData() {
-  const result = getPathBaseParams()
-  shareData.vm = result.vm
-  shareData.loginName = result.loginName
-  shareData.out_trade_no = result.out_trade_no
-}
-async function initList() {
-  listLoading.value = true
-  await shareData.fetchBaseInfo()
-  shareData.sort()
-  listLoading.value = false
-}
-onMounted(() => {
-  initPathData()
-  initList()
-})
 </script>
 
 <style scoped lang="less">
@@ -181,36 +137,68 @@ onMounted(() => {
   border-radius: 35px;
   font-size: 18px;
 }
+
 main {
   padding: 0 8px;
 }
+
+// footer {
+//   padding: 8px 21px 8px;
+// }
 footer {
+  display: flex;
   padding: 8px 21px 8px;
+  gap: 6px 14px;
+  font-size: 18px;
+
+  &>button:first-child {
+    background: #ffffff;
+    color: #929292;
+    border: 1px solid #d1d4de;
+    border-radius: 25px;
+    flex: 1;
+  }
+
+  &>button:last-child {
+    background: var(--ubox-btn-background);
+    border-radius: 25px;
+    color: #ffffff;
+    flex: 2;
+    border: none;
+  }
 }
+
 .card-head {
-  & > div {
+  &>div {
     text-align: center;
     padding: 12px 0;
   }
-  & > div:nth-child(1) {
+
+  &>div:nth-child(1) {
     flex: 5;
   }
-  & > div:nth-child(2) {
+
+  &>div:nth-child(2) {
     flex: 10;
   }
-  & > div:nth-child(3) {
+
+  &>div:nth-child(3) {
     flex: 5;
   }
-  & > div:nth-child(4) {
+
+  &>div:nth-child(4) {
     flex: 6;
   }
 }
+
 .card {
   @img-size: 60px;
+
   .goods-img-container {
     width: @img-size;
     height: @img-size;
     position: relative;
+
     div {
       position: absolute;
       width: @img-size;
@@ -222,34 +210,41 @@ footer {
       font-weight: bold;
       background: rgba(0, 0, 0, 0.3);
     }
+
     img {
       width: @img-size;
       height: @img-size;
     }
   }
 }
+
 .card-main {
   padding: 10px;
   display: flex;
   align-items: center;
   background: #ffffff;
 }
+
 .card-desc {
   color: #737373;
+
   div {
     text-align: left;
     margin-top: 5px;
     padding-left: 10px;
   }
 }
+
 .icon {
   color: #ff6600;
   line-height: 14px;
+
   img {
     width: 14px;
     height: 14px;
   }
 }
+
 .divide {
   margin: 10px 10px 20px;
 }

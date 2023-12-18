@@ -1,3 +1,4 @@
+import { COUNT_SUPPLY_STEPS, NORMAL_SUPPLY_STEPS } from "@/config";
 import { fetchGoodsInMachine } from "@/service";
 import { defineStore } from "pinia";
 import { showToast } from "vant";
@@ -14,6 +15,16 @@ export const useShareData = defineStore('shareData', {
       out_trade_no: '',
       sn: '',
       loginName: '',
+      imageBeforeOpen: '',
+      isNormalSupply: true,
+      imageInfoBeforeOpen: {
+        url: '',
+        time: ''
+      },
+      imageInfoAfterOpen: {
+        url: '',
+        time: ''
+      }
     }
   },
   getters: {
@@ -55,6 +66,22 @@ export const useShareData = defineStore('shareData', {
         if (!!!state.reportImage) throw new Error("请补货后拍照上传")
         return state.reportImage
       }
+    },
+    imageAfterOpen(state) {
+      return () => {
+        if (!!!state.imageInfoAfterOpen.url) throw new Error("请补货后拍照上传")
+        return state.imageInfoAfterOpen.url
+      }
+    },
+    imageBeforeOpen(state) {
+      return () => {
+        if (!!!state.imageInfoBeforeOpen.url) throw new Error("开门前拍照上传")
+        return state.imageInfoBeforeOpen.url
+      }
+    },
+    steps(state) {
+      if (state.isNormalSupply) return NORMAL_SUPPLY_STEPS
+      return COUNT_SUPPLY_STEPS
     }
   },
   actions: {
@@ -99,7 +126,8 @@ export const useShareData = defineStore('shareData', {
       }
     },
 
-  }
+  },
+  persist: true,
 })
 
 type State = {
@@ -116,4 +144,26 @@ type State = {
   loginName: string
   displayImage: string
   reportImage: string
+  imageBeforeOpen: string
+
+  /** 常规补货 */
+  isNormalSupply: boolean
+
+  /** 开门前拍照信息 */
+  imageInfoBeforeOpen: {
+
+    /** 照片url */
+    url: string;
+
+    /** 拍照时间 */
+    time: string
+  }
+  imageInfoAfterOpen: {
+
+    /** 照片url */
+    url: string;
+
+    /** 拍照时间 */
+    time: string
+  }
 }

@@ -1,3 +1,6 @@
+import { submit } from "@/service"
+import { useShareData } from "@/store"
+import { v4 as uuidV4 } from "uuid"
 // const UBOX_TOKEN_KEY = 'UBOX_TOKEN_KEY'
 export default function (callback: (env: string) => void) {
   if (import.meta.env.MODE != 'prod') {
@@ -101,4 +104,42 @@ export const getUboxToken = () => {
       reject(new Error('客户端调用失败，获取不到用户信息'))
     }
   })
+}
+
+export async function firstReport() {
+  const shareData = useShareData()
+  const transactionId = uuidV4()
+  const sn = initSN()
+  const submitResult = await submit({
+    vmCode: shareData.VM(),
+    moment: 0,
+    transactionId,
+    out_trade_no: shareData.OUT_TRADE_NO(),
+    productInfo: shareData.goodsList.map(item => ({
+      productId: item.productId,
+      productName: item.productName,
+      productCount: item.stock_temp,
+      productIdentifyCount: item.stock
+    })),
+    sn,
+    inventory: 1,
+    loginName: shareData.LOGIN_NAME(),
+    prePictures: shareData.imageBeforeOpen(),
+    prePictureTime: shareData.imageInfoBeforeOpen.time
+  })
+  if (submitResult?.head?.code != 200)
+    throw new Error(submitResult?.head?.desc)
+  shareData.goodsList = shareData.goodsList.map(item => {
+    /** 推荐补货数 =  上次补货后库存 - 修正库存*/
+    let temp = item.replenishmentStock - item.stock_temp
+    return {
+      ...item,
+      recommend: temp >= 0 ? temp : 0,// 推荐补货数
+      recommend_temp: item.replenishmentStock,// 补货后库存
+    }
+  })
+  // 保存sn和transaction
+  shareData.transactionId = transactionId
+  shareData.sn = sn
+
 }
