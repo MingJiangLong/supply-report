@@ -1,9 +1,10 @@
 <!-- !第二版之后，此页面不再作为首页 补货前盘点 -->
 <template>
-  <main>
+  <PageContainer>
     <Location />
     <Steps :current="1" :steps="COUNT_SUPPLY_STEPS" />
-    <Alarm message="开门后，确认库存" />
+    <!-- <Alarm message="开门后，确认库存" /> -->
+    <Search v-model="searchValue" placeholder="请输入商品名称" @search="onSearch" />
     <div class="card">
       <div class="row card-head" style="background: #fff8f3">
         <div>商品图片</div>
@@ -11,73 +12,78 @@
         <div>系统库存</div>
         <div>修正库存</div>
       </div>
-      <List v-model:loading="listLoading" disabled>
-        <template v-for="(item, key) in shareData.goodsList">
-          <div class="row card-head card-main">
-            <div class="goods-img-container">
-              <div v-if="item.delete">已删除</div>
-              <img :src="item.imageUrl" />
+      <div class="card-body">
+        <List v-model:loading="listLoading" disabled style="">
+          <template v-for="(item, key) in shareData.goodsList" ref="listRef">
+            <div class="row card-head card-main">
+              <div class="goods-img-container">
+                <div v-if="item.delete">已删除</div>
+                <img :src="item.imageUrl" />
+              </div>
+              <div class="card-desc">
+                <div>{{ item.fullName }}</div>
+                <div>ID:{{ item.productId }}</div>
+              </div>
+              <div v-if="item.status != 'editing'">{{ item.stock_temp }}</div>
+              <div
+                   v-if="item.status != 'editing'"
+                   class="icon row"
+                   @click="onEditBtnClick(key)">
+                <img src="@/assets/img/icon_edit.png" />
+                <span>修正库存</span>
+              </div>
+              <div style="flex: 11" v-if="item.status == 'editing'">
+                <Stepper
+                         :min="0"
+                         :max="999"
+                         :default-value="item.stock_temp"
+                         @change="v => {
+                           onStepperChange(key, v)
+                         }
+                           " />
+              </div>
             </div>
-            <div class="card-desc">
-              <div>{{ item.fullName }}</div>
-              <div>ID:{{ item.productId }}</div>
+            <div class="row card-main">
+              <div style="flex: 1">该商品库存核对状态:</div>
+              <div
+                   :class="item.status != undefined
+                     ? 'hairline-btn-disable'
+                     : 'hairline-btn'
+                     "
+                   @click="onConfirmStore(key)">
+                {{ item.status != undefined ? "已确认" : "确认库存" }}
+              </div>
             </div>
-            <div v-if="item.status != 'editing'">{{ item.stock_temp }}</div>
-            <div
-                 v-if="item.status != 'editing'"
-                 class="icon row"
-                 @click="onEditBtnClick(key)">
-              <img src="@/assets/img/icon_edit.png" />
-              <span>修正库存</span>
-            </div>
-            <div style="flex: 11" v-if="item.status == 'editing'">
-              <Stepper
-                       :min="0"
-                       :max="999"
-                       :default-value="item.stock_temp"
-                       @change="v => {
-                         onStepperChange(key, v)
-                       }
-                         " />
-            </div>
-          </div>
-          <div class="row card-main">
-            <div style="flex: 1">该商品库存核对状态:</div>
-            <div
-                 :class="item.status != undefined
-                   ? 'hairline-btn-disable'
-                   : 'hairline-btn'
-                   "
-                 @click="onConfirmStore(key)">
-              {{ item.status != undefined ? "已确认" : "确认库存" }}
-            </div>
-          </div>
-          <div class="van-hairline--bottom divide"></div>
-        </template>
-      </List>
+            <div class="van-hairline--bottom divide"></div>
+          </template>
+        </List>
+      </div>
     </div>
-  </main>
-  <footer>
-    <Button @click="() => router.back()">上一步</Button>
-    <Button
-            @click="onBottomBtnClick"
-            :loading="submitLoading"
-            :disabled="!isNextAble"
-            class="bottom-btn">核对无误,开始补货</Button>
-  </footer>
+
+    <template v-slot:footer>
+      <Button @click="() => router.back()">上一步</Button>
+      <Button
+              @click="onBottomBtnClick"
+              :loading="submitLoading"
+              :disabled="!isNextAble"
+              class="bottom-btn">核对无误,开始补货</Button>
+    </template>
+
+  </PageContainer>
 </template>
 
 <script setup lang="ts">
-import Alarm from "@/components/Alarm.vue"
+// import Alarm from "@/components/Alarm.vue"
 import Location from "@/components/Location.vue"
 import Steps from "@/components/Steps.vue"
 import { firstReport } from "@/utils"
-import { computed,  ref } from "vue"
+import { computed, ref } from "vue"
 import { useRouter } from "vue-router"
-import { Stepper, Button, List, } from "vant"
+import { Stepper, Button, List, Search } from "vant"
 import { showToast } from "vant"
 import { useShareData } from "@/store"
 import { COUNT_SUPPLY_STEPS } from "@/config"
+import PageContainer from "@/components/PageContainer.vue"
 const router = useRouter()
 const shareData = useShareData()
 const submitLoading = ref(false)
@@ -125,29 +131,28 @@ function onConfirmStore(index: number) {
   if (!goods) return
   goods["status"] = "edited"
 }
+
+const searchValue = ref('')
+const listRef = ref()
+/** 搜索商品，搜索到的商品滚动到视图中央 */
+function onSearch(value: any) {
+  searchValue.value = value;
+  if (!shareData.goodsList.length) return;
+  if (!searchValue.value) {
+    return listRef.value[0]?.scrollIntoView({ block: 'center' })
+  }
+  const findIndex = shareData.goodsList.findIndex(item => {
+    return item.fullName.includes(searchValue.value)
+  })
+  if (findIndex != -1) {
+    listRef.value[findIndex]?.scrollIntoView({ block: 'center' })
+  }
+}
 </script>
 
 <style scoped lang="less">
-.bottom-btn {
-  width: 100%;
-  padding: 16px;
-  text-align: center;
-  background: var(--ubox-btn-background);
-  color: #ffffff;
-  border-radius: 35px;
-  font-size: 18px;
-}
-
-main {
-  padding: 0 8px;
-}
 
 footer {
-  display: flex;
-  padding: 8px 21px 8px;
-  gap: 6px 14px;
-  font-size: 18px;
-
   &>button:first-child {
     background: #ffffff;
     color: #929292;
@@ -162,6 +167,7 @@ footer {
     color: #ffffff;
     flex: 2;
     border: none;
+    margin-left: 10px;
   }
 }
 
@@ -190,6 +196,9 @@ footer {
 
 .card {
   @img-size: 60px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 
   .goods-img-container {
     width: @img-size;
@@ -212,6 +221,11 @@ footer {
       width: @img-size;
       height: @img-size;
     }
+  }
+
+  .card-body {
+    flex: 1;
+    overflow-y: scroll;
   }
 }
 

@@ -1,5 +1,5 @@
 <template>
-  <main style="position: relative;">
+  <PageContainer>
     <Location />
     <Steps :current="shareData.isNormalSupply ? 1 : 2" :steps="shareData.steps" />
     <div class="tips">
@@ -16,60 +16,62 @@
         <div>推荐补货数</div>
         <div>补货后库存</div>
       </div>
-      <List v-model:loading="listLoading" disabled style="flex: 1;">
-        <div v-for="(item, key) in shareData.goodsList" ref="listRef">
-          <div class="row card-head card-main">
-            <div class="goods-img-container">
-              <div v-if="item.delete">已删除</div>
-              <img :src="item.imageUrl" />
+      <div class="card-body">
+        <List v-model:loading="listLoading" disabled style="flex: 1;">
+          <div v-for="(item, key) in shareData.goodsList" ref="listRef">
+            <div class="row card-head card-main">
+              <div class="goods-img-container">
+                <div v-if="item.delete">已删除</div>
+                <img :src="item.imageUrl" />
+              </div>
+              <div class="card-desc">
+                <div>{{ item.fullName }}</div>
+                <div>ID:{{ item.productId }}</div>
+              </div>
+              <div v-if="item.status2 != 'editing'">
+                {{ item.recommend }}
+              </div>
+              <div
+                   v-if="item.status2 != 'editing'"
+                   class="icon row"
+                   style="justify-content: center"
+                   @click="onEditBtnClick(key)">
+                <span>{{ item.recommend_temp }}</span>
+                <img src="@/assets/img/icon_edit.png" />
+              </div>
+              <div v-if="item.status2 == 'editing'" style="flex: 11">
+                <Stepper
+                         :min="0"
+                         :default-value="item.recommend_temp"
+                         @change="v => {
+                           onStepperChange(key, v)
+                         }
+                           " />
+              </div>
             </div>
-            <div class="card-desc">
-              <div>{{ item.fullName }}</div>
-              <div>ID:{{ item.productId }}</div>
+            <div class="row card-main">
+              <div style="flex: 1">该商品补货核对状态:</div>
+              <div
+                   :class="item.status2 != undefined
+                     ? 'hairline-btn-disable'
+                     : 'hairline-btn'
+                     "
+                   @click="onConfirmStore(key)">
+                {{ item.status2 != undefined ? "已确认" : "确认补货数" }}
+              </div>
             </div>
-            <div v-if="item.status2 != 'editing'">
-              {{ item.recommend }}
-            </div>
-            <div
-                 v-if="item.status2 != 'editing'"
-                 class="icon row"
-                 style="justify-content: center"
-                 @click="onEditBtnClick(key)">
-              <span>{{ item.recommend_temp }}</span>
-              <img src="@/assets/img/icon_edit.png" />
-            </div>
-            <div v-if="item.status2 == 'editing'" style="flex: 11">
-              <Stepper
-                       :min="0"
-                       :default-value="item.recommend_temp"
-                       @change="v => {
-                         onStepperChange(key, v)
-                       }
-                         " />
-            </div>
+            <div class="van-hairline--bottom divide"></div>
           </div>
-          <div class="row card-main">
-            <div style="flex: 1">该商品补货核对状态:</div>
-            <div
-                 :class="item.status2 != undefined
-                   ? 'hairline-btn-disable'
-                   : 'hairline-btn'
-                   "
-                 @click="onConfirmStore(key)">
-              {{ item.status2 != undefined ? "已确认" : "确认补货数" }}
-            </div>
-          </div>
-          <div class="van-hairline--bottom divide"></div>
-        </div>
-      </List>
+        </List>
+      </div>
     </div>
-  </main>
-  <footer>
-    <Button @click="goBack" class="bottom-btn-1">上一步</Button>
-    <Button @click="onNextStep" class="bottom-btn" :disabled="!isBtnAble">
-      补货完成,去拍照
-    </Button>
-  </footer>
+    <template v-slot:footer>
+      <Button @click="goBack" class="bottom-btn-1">上一步</Button>
+      <Button @click="onNextStep" class="bottom-btn" :disabled="!isBtnAble">
+        补货完成,去拍照
+      </Button>
+    </template>
+  </PageContainer>
 </template>
 
 <script setup lang="ts">
@@ -81,6 +83,7 @@ import { Stepper, List, Search, Button } from "vant"
 import { useShareData } from "@/store"
 import { ref } from "vue"
 import { computed } from "vue"
+import PageContainer from "@/components/PageContainer.vue"
 const router = useRouter()
 const shareData = useShareData()
 const listLoading = ref(false)
@@ -174,27 +177,8 @@ footer {
     color: #ffffff;
     flex: 2;
     border: none;
+    margin-left: 10px;
   }
-}
-
-.bottom-btn {
-  width: 120%;
-  padding: 16px;
-  text-align: center;
-  background: var(--ubox-btn-background);
-  color: #ffffff;
-  border-radius: 35px;
-  font-size: 18px;
-}
-
-.bottom-btn-1 {
-  width: 100%;
-  padding: 16px;
-  text-align: center;
-  background: #ffffff;
-  color: #929292;
-  border-radius: 35px;
-  font-size: 18px;
 }
 
 .goods-img-container {
@@ -252,6 +236,11 @@ footer {
   img {
     width: @img-size;
     height: @img-size;
+  }
+
+  .card-body {
+    flex: 1;
+    overflow-y: scroll;
   }
 }
 

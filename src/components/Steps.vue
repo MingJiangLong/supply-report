@@ -36,7 +36,7 @@ const steps = reactive(["补货前确认", "补货后确认", "拍照上报"])
   flex-direction: row;
   align-items: center;
   font-size: 14px;
-  height: 90px;
+  height: 80px;
   background: #ffffff;
   padding: 0 40px;
   border-radius: 8px;

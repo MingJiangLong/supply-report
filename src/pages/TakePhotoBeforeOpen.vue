@@ -1,7 +1,7 @@
 <!-- !新需求 此页作为首页 -->
 <!-- 开门前拍照 -->
 <template>
-  <main>
+  <PageContainer>
     <Location />
     <Steps :current="0" :steps="shareData.steps" />
     <Alarm message="开门前，拍照上报" />
@@ -21,10 +21,10 @@
                desc="拍照上报" />
       </div>
     </div>
-  </main>
-  <footer>
-    <Button @click="onNextStep" :disabled="!shareData.imageInfoBeforeOpen.url" :loading="loading">下一步</Button>
-  </footer>
+    <template v-slot:footer>
+      <Button @click="onNextStep" :disabled="!shareData.imageInfoBeforeOpen.url" :loading="loading">下一步</Button>
+    </template>
+  </PageContainer>
 </template>
 
 <script setup lang="ts">
@@ -41,10 +41,11 @@ import { Button } from "vant";
 import { initSN, isDev } from "@/utils";
 import { onMounted } from "vue";
 import { URLHash } from 'ubox-util'
+import PageContainer from '@/components/PageContainer.vue'
 const shareData = useShareData()
 function initPathData() {
   if (isDev()) {
-    location.replace(` http://192.168.29.45:5173/supply-report-dev#/take-photo-before-open?vm=99900990&out_trade_no=99902380A20230209163729&loginName=18576518892&is_normal_supply=false`)
+    location.replace(`http://192.168.37.40:5173/supply-report-dev/#/take-photo-before-open?vm=99900990&out_trade_no=99902380A20230209163729&loginName=18576518892&is_normal_supply=false`)
   }
   shareData.vm = URLHash.getValueByKey("vm")
   shareData.loginName = URLHash.getValueByKey("loginName")
@@ -121,11 +122,6 @@ onMounted(() => {
 }
 
 footer {
-  display: flex;
-  padding: 8px 21px 8px;
-  gap: 6px 14px;
-  font-size: 18px;
-
   &>button:first-child {
     background: var(--ubox-btn-background);
     color: #ffffff;
@@ -133,13 +129,5 @@ footer {
     border-radius: 25px;
     flex: 1;
   }
-
-  // & > button:last-child {
-  //   background: var(--ubox-btn-background);
-  //   border-radius: 25px;
-  //   color: #ffffff;
-  //   flex: 2;
-  //   border: none;
-  // }
 }
 </style>

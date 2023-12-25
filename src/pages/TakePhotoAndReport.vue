@@ -1,6 +1,6 @@
 <!-- 补货后拍照上传 -->
 <template>
-  <main>
+  <PageContainer>
     <Location />
     <Steps :current="shareData.steps.length - 1" :steps="shareData.steps" />
     <Alarm message="关门后，拍照上报" />
@@ -20,13 +20,13 @@
                desc="拍照上报" />
       </div>
     </div>
-  </main>
-  <footer>
-    <Button @click="onPreStep">上一步</Button>
-    <Button @click="onSubmit" :loading="submitLoading" :disabled="haveSubmit">提交</Button>
-    <!-- <button @click="onPreStep">上一步</button>
-    <button @click="onSubmit">提交</button> -->
-  </footer>
+    <template v-slot:footer>
+      <Button @click="onPreStep">上一步</Button>
+      <Button @click="onSubmit" :loading="submitLoading"
+              :disabled="!!!shareData.imageInfoAfterOpen.url || haveSubmit">提交</Button>
+    </template>
+
+  </PageContainer>
 </template>
 
 <script setup lang="ts">
@@ -34,6 +34,7 @@ import Alarm from "@/components/Alarm.vue"
 import Image from "@/components/Image.vue"
 import Location from "@/components/Location.vue"
 import Steps from "@/components/Steps.vue"
+import PageContainer from "@/components/PageContainer.vue"
 import { useShareData } from "@/store"
 import eg_small from "@/assets/img/eg_small.png"
 import eg_big from "@/assets/img/eg_big.png"
@@ -165,10 +166,10 @@ footer {
     color: #ffffff;
     flex: 2;
     border: none;
+    margin-left: 10px;
   }
 }
 
-.component-container {}
 
 .card {
   padding: 23px 14px;
