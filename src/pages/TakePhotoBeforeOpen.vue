@@ -88,6 +88,15 @@ const loading = ref(false)
 async function onNextStep() {
 
   if (shareData.isNormalSupply) {
+    shareData.goodsList = shareData.goodsList.map(item => {
+      /** 推荐补货数 =  上次补货后库存 - 修正库存*/
+      let temp = item.replenishmentStock - item.stock_temp
+      return {
+        ...item,
+        recommend: temp >= 0 ? temp : 0,// 推荐补货数
+        recommend_temp: item.replenishmentStock,// 补货后库存
+      }
+    })
     router.push("confirm-after-supply")
   }
 
