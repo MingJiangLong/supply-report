@@ -7,8 +7,7 @@
       <div>2. 商品补货量与推荐量不一致，根据差额加减补货后库存</div>
     </div>
     <Search
-            v-model="searchValue" placeholder="请输入商品名称" @search="onSearch"
-            style="position: -webkit-sticky;position: sticky;top:0px;z-index: 999;" />
+            v-model="searchValue" placeholder="请输入商品名称" @search="onSearch" />
     <div class="card">
       <div class="row card-head" style="background: #fff8f3">
         <div>商品图片</div>
@@ -17,7 +16,7 @@
         <div>补货后库存</div>
       </div>
       <div class="card-body">
-        <List v-model:loading="listLoading" disabled style="flex: 1;">
+        <List v-model:loading="listLoading" disabled >
           <div v-for="(item, key) in shareData.goodsList" ref="listRef">
             <div class="row card-head card-main">
               <div class="goods-img-container">
@@ -230,8 +229,10 @@ footer {
 .card {
   @img-size: 60px;
   display: flex;
-  flex: 1;
   flex-direction: column;
+  flex: 1;
+  height: 0;
+  background: var(--ubox-page-bg);
 
   img {
     width: @img-size;
@@ -240,7 +241,8 @@ footer {
 
   .card-body {
     flex: 1;
-    overflow-y: scroll;
+    overflow:auto;
+    margin: 5px 0;
   }
 }
 
@@ -248,6 +250,7 @@ footer {
   padding: 10px;
   display: flex;
   align-items: center;
+  background: #ffffff;
 }
 
 .card-desc {
@@ -269,16 +272,12 @@ footer {
 }
 
 .divide {
-  margin: 10px 10px 20px;
+  margin: 5px 10px 5px;
 }
 
 .tips {
   color: #FF7500;
   font-size: 12px;
   padding: 12px;
-}
-
-main {
-  // overflow-y: hidden;
 }
 </style>

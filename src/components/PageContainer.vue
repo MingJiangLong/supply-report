@@ -38,9 +38,12 @@ onMounted(() => {
 }
 
 main {
+  padding: 0 8px;
   display: flex;
   flex-direction: column;
-  flex: 1
+  font-size: 14px;
+  height: calc(100vh - 70px);
+  background: var(--ubox-page-bg);
 }
 
 footer {
@@ -48,7 +51,6 @@ footer {
   display: flex;
   flex-direction: row;
   align-items: center;
-  padding: 0 20px 10px;
-  // background: red;
+  padding: 0 10px;
 }
 </style>

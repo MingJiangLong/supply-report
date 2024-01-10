@@ -3,7 +3,6 @@
   <PageContainer>
     <Location />
     <Steps :current="1" :steps="COUNT_SUPPLY_STEPS" />
-    <!-- <Alarm message="开门后，确认库存" /> -->
     <Search v-model="searchValue" placeholder="请输入商品名称" @search="onSearch" />
     <div class="card">
       <div class="row card-head" style="background: #fff8f3">
@@ -13,8 +12,8 @@
         <div>修正库存</div>
       </div>
       <div class="card-body">
-        <List v-model:loading="listLoading" disabled style="">
-          <template v-for="(item, key) in shareData.goodsList" ref="listRef">
+        <List v-model:loading="listLoading" disabled >
+          <div v-for="(item, key) in shareData.goodsList" ref="listRef">
             <div class="row card-head card-main">
               <div class="goods-img-container">
                 <div v-if="item.delete">已删除</div>
@@ -55,7 +54,7 @@
               </div>
             </div>
             <div class="van-hairline--bottom divide"></div>
-          </template>
+          </div>
         </List>
       </div>
     </div>
@@ -199,6 +198,8 @@ footer {
   display: flex;
   flex-direction: column;
   flex: 1;
+  height: 0;
+  background: var(--ubox-page-bg);
 
   .goods-img-container {
     width: @img-size;
@@ -225,7 +226,8 @@ footer {
 
   .card-body {
     flex: 1;
-    overflow-y: scroll;
+    overflow:auto;
+    margin: 5px 0;
   }
 }
 
@@ -257,6 +259,6 @@ footer {
 }
 
 .divide {
-  margin: 10px 10px 20px;
+  margin: 5px 10px 5px;
 }
 </style>

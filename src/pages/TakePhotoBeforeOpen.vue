@@ -45,7 +45,7 @@ import PageContainer from '@/components/PageContainer.vue'
 const shareData = useShareData()
 function initPathData() {
   if (isDev()) {
-    location.replace(`http://192.168.37.40:5173/supply-report-dev/#/take-photo-before-open?vm=99900990&out_trade_no=99902380A20230209163729&loginName=18576518892&is_normal_supply=false`)
+    location.replace(`http://192.168.31.22:5173/supply-report-dev/#/take-photo-before-open?vm=99900990&out_trade_no=99902380A20230209163729&loginName=18576518892&is_normal_supply=false`)
   }
   shareData.vm = URLHash.getValueByKey("vm")
   shareData.loginName = URLHash.getValueByKey("loginName")
