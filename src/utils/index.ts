@@ -3,62 +3,62 @@ import { useShareData } from "@/store"
 import { v4 as uuidV4 } from "uuid"
 // const UBOX_TOKEN_KEY = 'UBOX_TOKEN_KEY'
 export default function (callback: (env: string) => void) {
-  if (import.meta.env.MODE != 'prod') {
-    typeof callback === 'function' && callback(import.meta.env.MODE)
+  if (import.meta.env.MODE != "prod") {
+    typeof callback === "function" && callback(import.meta.env.MODE)
   }
 }
-
 
 // https://h5.dev.uboxol.com/replenishment-dev/#/?to=replnm&vm=99900990&out_trade_no=907428914732
 /**
  * 从路由hash获取部分参数
- * @returns 
+ * @returns
  */
 
 export function isDev() {
-  return import.meta.env.MODE === 'development'
+  return import.meta.env.MODE === "development"
 }
 
 export function isPre() {
-  return import.meta.env.MODE === 'pre'
+  return import.meta.env.MODE === "pre"
 }
 
 export function isTesting() {
-  return import.meta.env.MODE === 'testing'
+  return import.meta.env.MODE === "testing"
 }
 export function isProd() {
-  return import.meta.env.MODE === 'prod'
+  return import.meta.env.MODE === "prod"
 }
 export function getPathBaseParams(): { [k: string]: any } {
-
   if (isDev()) {
     return {
-      vm: '99900990',
+      vm: "99900990",
       out_trade_no: "99902380A20230209163729",
-      loginName: '18576518892'
+      loginName: "18576518892",
     }
   }
-  let hash = window.location.hash;
-  hash = hash.substring(3);
+  let hash = window.location.hash
+  hash = hash.substring(3)
   return hash.split("&").reduce((count, current) => {
     let [key, value] = current.split("=")
     return {
       ...count,
-      [key]: value
+      [key]: value,
     }
   }, {})
 }
 
+export function addWatermark(
+  image: CanvasImageSource,
+  message: string[]
+): Promise<Blob | null> {
+  return new Promise(s => {
+    const canvasDom = document.createElement("canvas")
+    canvasDom.width = window.innerWidth
+    canvasDom.height = window.innerHeight
 
-export function addWatermark(image: CanvasImageSource, message: string[]): Promise<Blob | null> {
-  return new Promise((s) => {
-    const canvasDom = document.createElement('canvas');
-    canvasDom.width = window.innerWidth;
-    canvasDom.height = window.innerHeight;
-
-    const context = canvasDom.getContext("2d");
+    const context = canvasDom.getContext("2d")
     if (!context) return
-    context.drawImage(image, 0, 0, window.innerWidth, window.innerHeight);
+    context.drawImage(image, 0, 0, window.innerWidth, window.innerHeight)
 
     context.fillStyle = "rgba(0,0,0,.5)"
     context.globalAlpha = 0.6
@@ -70,9 +70,13 @@ export function addWatermark(image: CanvasImageSource, message: string[]): Promi
     context.fillText(`${message[1]}`, 20, 50)
     context.fillText(`${message[2]}`, 20, 80)
     // return canvasDom.toDataURL('image/png')
-    canvasDom.toBlob(function (e) {
-      s(e)
-    }, 'image/png', 1)
+    canvasDom.toBlob(
+      function (e) {
+        s(e)
+      },
+      "image/png",
+      1
+    )
   })
 }
 
@@ -81,16 +85,28 @@ export function getLocalDateStr(value: number) {
   return `0${value}`
 }
 export function initSN(link = false) {
-  const date = new Date();
+  const date = new Date()
   if (!link) {
-    return `${date.getFullYear()}${getLocalDateStr(date.getMonth() + 1)}${getLocalDateStr(date.getDate())}${getLocalDateStr(date.getHours())}${getLocalDateStr(date.getMinutes())}${getLocalDateStr(date.getSeconds())}`
+    return `${date.getFullYear()}${getLocalDateStr(
+      date.getMonth() + 1
+    )}${getLocalDateStr(date.getDate())}${getLocalDateStr(
+      date.getHours()
+    )}${getLocalDateStr(date.getMinutes())}${getLocalDateStr(
+      date.getSeconds()
+    )}`
   }
 
-  return `${date.getFullYear()}-${getLocalDateStr(date.getMonth() + 1)}-${getLocalDateStr(date.getDate())} ${getLocalDateStr(date.getHours())}:${getLocalDateStr(date.getMinutes())}:${getLocalDateStr(date.getSeconds())}`
+  return `${date.getFullYear()}-${getLocalDateStr(
+    date.getMonth() + 1
+  )}-${getLocalDateStr(date.getDate())} ${getLocalDateStr(
+    date.getHours()
+  )}:${getLocalDateStr(date.getMinutes())}:${getLocalDateStr(
+    date.getSeconds()
+  )}`
 }
 
 export async function refreshToken() {
-  if (isDev()) return 'yapi-uboxol';
+  if (isDev()) return "yapi-uboxol"
   return await getUboxToken()
 }
 
@@ -101,7 +117,7 @@ export const getUboxToken = () => {
         resolve(token)
       })
     } catch (error) {
-      reject(new Error('客户端调用失败，获取不到用户信息'))
+      reject(new Error("客户端调用失败，获取不到用户信息"))
     }
   })
 }
@@ -119,27 +135,41 @@ export async function firstReport() {
       productId: item.productId,
       productName: item.productName,
       productCount: item.stock_temp,
-      productIdentifyCount: item.stock
+      productIdentifyCount: item.stock,
     })),
     sn,
     loginName: shareData.LOGIN_NAME(),
     pictures: shareData.imageBeforeOpen(),
-    pictureTime: shareData.imageInfoBeforeOpen.time
+    pictureTime: shareData.imageInfoBeforeOpen.time,
   })
-  if (submitResult?.head?.code != 200)
-    throw new Error(submitResult?.head?.desc)
+  if (submitResult?.head?.code != 200) throw new Error(submitResult?.head?.desc)
   shareData.goodsList = shareData.goodsList.map(item => {
-    /** 推荐补货数 =  上次补货后库存 - 修正库存*/
+    /** 非分拣机推荐补货数 =  上次补货后库存 - 修正库存*/
     let temp = item.replenishmentStock - item.stock_temp
-    let lockNumber = isNaN(+item?.lastStockNum) ? temp : +item.lastStockNum < 0 ? temp : +item.lastStockNum
+    let recommendNumber = temp >= 0 ? temp : 0
+
+    // 分拣机(分拣机才有备货数)
+    const isSortTypeMachine = +item.lastStockNum > 0
+
     return {
       ...item,
-      recommend: lockNumber,// 推荐补货数
-      recommend_temp: item.replenishmentStock,// 补货后库存
+      // 非分拣机: 推荐补货数 =  上次补货后库存 - 修正库存; 分拣机: 推荐补货数 = lastStockNum(备货数)
+      recommend: isSortTypeMachine ? +item?.lastStockNum : recommendNumber, // 推荐补货数
+      // 分拣机:补货后库存 = 推荐补货数 + 修正库存; 非分拣机:补货后库存 = replenishmentStock (上次补货后库存)
+      recommend_temp: isSortTypeMachine
+        ? item.lastStockNum + item.stock_temp
+        : item.replenishmentStock, // 补货后库存
     }
+    // /** 推荐补货数 =  上次补货后库存 - 修正库存*/
+    // let temp = item.replenishmentStock - item.stock_temp
+    // let lockNumber = isNaN(+item?.lastStockNum) ? temp : +item.lastStockNum < 0 ? temp : +item.lastStockNum
+    // return {
+    //   ...item,
+    //   recommend: lockNumber,// 推荐补货数
+    //   recommend_temp: item.replenishmentStock,// 补货后库存
+    // }
   })
   // 保存sn和transaction
   shareData.transactionId = transactionId
   shareData.sn = sn
-
 }

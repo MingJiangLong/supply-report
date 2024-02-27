@@ -97,15 +97,30 @@ async function onNextStep() {
 
   if (shareData.isNormalSupply) {
     shareData.goodsList = shareData.goodsList.map(item => {
-      /** 推荐补货数 =  上次补货后库存 - 修正库存*/
-      let temp = item.replenishmentStock - item.stock_temp
 
-      let lockNumber = isNaN(+item?.lastStockNum) ? temp : +item.lastStockNum < 0 ? temp : +item.lastStockNum
+      /** 非分拣机推荐补货数 =  上次补货后库存 - 修正库存*/
+      let temp = item.replenishmentStock - item.stock_temp;
+      let recommendNumber = temp >= 0 ? temp : 0
+
+      // 分拣机(分拣机才有备货数)
+      const isSortTypeMachine = +item.lastStockNum > 0
+
       return {
         ...item,
-        recommend: lockNumber,// 推荐补货数
-        recommend_temp: item.replenishmentStock,// 补货后库存
+        // 非分拣机: 推荐补货数 =  上次补货后库存 - 修正库存; 分拣机: 推荐补货数 = lastStockNum(备货数)
+        recommend: isSortTypeMachine ? +item?.lastStockNum : recommendNumber,// 推荐补货数
+        // 分拣机:补货后库存 = 推荐补货数 + 修正库存; 非分拣机:补货后库存 = replenishmentStock (上次补货后库存)
+        recommend_temp: isSortTypeMachine ? item.lastStockNum + item.stock_temp : item.replenishmentStock,// 补货后库存
       }
+      // /** 推荐补货数 =  上次补货后库存 - 修正库存*/
+      // let temp = item.replenishmentStock - item.stock_temp
+
+      // let lockNumber = isNaN(+item?.lastStockNum) ? temp : +item.lastStockNum < 0 ? temp : +item.lastStockNum
+      // return {
+      //   ...item,
+      //   recommend: lockNumber,// 推荐补货数
+      //   recommend_temp: item.replenishmentStock,// 补货后库存
+      // }
     })
     router.push("confirm-after-supply")
   }
