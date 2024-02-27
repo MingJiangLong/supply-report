@@ -52,6 +52,7 @@ function initPathData() {
     urlHelper.hashSearchParams.append("vm", "99900990")
     urlHelper.hashSearchParams.append("out_trade_no", "99902380A20230209163729")
     urlHelper.hashSearchParams.append("loginName", "18576518892")
+    urlHelper.hashSearchParams.append("is_normal_supply", 'false')
   }
 
   shareData.vm = urlHelper.hashSearchParams.get("vm") ?? ''
