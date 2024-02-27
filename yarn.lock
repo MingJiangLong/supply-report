@@ -4740,10 +4740,6 @@ typescript@^5.0.2:
   resolved "https://registry.npmjs.org/typescript/-/typescript-5.3.3.tgz#b3ce6ba258e72e6305ba66f5c9b452aaee3ffe37"
   integrity sha512-pXWcraxM0uxAS+tN0AG/BF2TyqmHO014Z070UsJ+pFvYuRSq8KH8DmWpnbXe0pEPDHXZV3FcAbJkijJ5oNEnWw==
 
-"ubox-util@https://github.com/MingJiangLong/ubox-web-util.git#master":
-  version "1.0.0"
-  resolved "https://github.com/MingJiangLong/ubox-web-util.git#452d786c2aafcb7e67ce3b8091ef6849617a8ac6"
-
 unbzip2-stream@^1.0.9:
   version "1.4.3"
   resolved "https://registry.npmjs.org/unbzip2-stream/-/unbzip2-stream-1.4.3.tgz#b0da04c4371311df771cdc215e87f2130991ace7"

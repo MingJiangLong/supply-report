@@ -28,6 +28,8 @@ interface Goods {
   recommend_temp:number
   // replenishmentStock_temp: number
   mdseTypeId1: number
+  /** 新版推荐补货数 */
+  lastStockNum:number 
 }
 
 interface ImportMetaEnv {

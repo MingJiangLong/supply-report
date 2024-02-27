@@ -40,17 +40,24 @@ import { useRouter } from "vue-router";
 import { Button } from "vant";
 import { initSN, isDev } from "@/utils";
 import { onMounted } from "vue";
-import { URLHash } from 'ubox-util'
 import PageContainer from '@/components/PageContainer.vue'
+import { URLHelper } from "web-url-helper"
 const shareData = useShareData()
 function initPathData() {
+
+  let url = window.location.toString()
+  const urlHelper = new URLHelper(url)
+
   if (isDev()) {
-    location.replace(`http://192.168.31.22:5173/supply-report-dev/#/take-photo-before-open?vm=99900990&out_trade_no=99902380A20230209163729&loginName=18576518892&is_normal_supply=false`)
+    urlHelper.hashSearchParams.append("vm", "99900990")
+    urlHelper.hashSearchParams.append("out_trade_no", "99902380A20230209163729")
+    urlHelper.hashSearchParams.append("loginName", "18576518892")
   }
-  shareData.vm = URLHash.getValueByKey("vm")
-  shareData.loginName = URLHash.getValueByKey("loginName")
-  shareData.out_trade_no = URLHash.getValueByKey("out_trade_no")
-  shareData.isNormalSupply = URLHash.getValueByKey("is_normal_supply") == 'false' ? false : true
+
+  shareData.vm = urlHelper.hashSearchParams.get("vm") ?? ''
+  shareData.loginName = urlHelper.hashSearchParams.get("loginName") ?? ''
+  shareData.out_trade_no = urlHelper.hashSearchParams.get("out_trade_no") ?? ''
+  shareData.isNormalSupply = urlHelper.hashSearchParams.get("is_normal_supply") == 'false' ? false : true
 }
 const router = useRouter()
 /**
@@ -91,9 +98,11 @@ async function onNextStep() {
     shareData.goodsList = shareData.goodsList.map(item => {
       /** 推荐补货数 =  上次补货后库存 - 修正库存*/
       let temp = item.replenishmentStock - item.stock_temp
+
+      let lockNumber = isNaN(+item?.lastStockNum) ? temp : +item.lastStockNum < 0 ? temp : +item.lastStockNum
       return {
         ...item,
-        recommend: temp >= 0 ? temp : 0,// 推荐补货数
+        recommend: lockNumber,// 推荐补货数
         recommend_temp: item.replenishmentStock,// 补货后库存
       }
     })
