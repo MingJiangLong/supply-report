@@ -3,13 +3,6 @@ import vue from "@vitejs/plugin-vue"
 import legacy from "@vitejs/plugin-legacy"
 import path from "path"
 import viteCompression from "vite-plugin-compression"
-const isProd = process.argv[process.argv.length - 1] == "prod"
-const isPre = process.argv[process.argv.length - 1] == "pre"
-function getSuffix() {
-  if (isProd) return ""
-  if (isPre) return "-pre"
-  return "-dev"
-}
 export default ({ mode }) => {
   return defineConfig({
     base: loadEnv(mode, process.cwd()).VITE_APP_BASE_PATH,
@@ -53,8 +46,8 @@ export default ({ mode }) => {
       minify: "terser",
       terserOptions: {
         compress: {
-          drop_console: isProd ? true : false,
-          drop_debugger: isProd ? true : false,
+          drop_console: true,
+          drop_debugger: true,
         },
       },
       chunkSizeWarningLimit: 5000,

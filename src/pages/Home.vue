@@ -2,7 +2,7 @@
 <template>
   <PageContainer>
     <Location />
-    <Steps :current="1" :steps="COUNT_SUPPLY_STEPS" />
+    <Steps :current="1" :steps="shareData.steps" />
     <Search v-model="searchValue" placeholder="请输入商品名称" @search="onSearch" />
     <div class="card">
       <div class="row card-head" style="background: #fff8f3">
@@ -12,7 +12,7 @@
         <div>修正库存</div>
       </div>
       <div class="card-body">
-        <List v-model:loading="listLoading" disabled >
+        <List v-model:loading="listLoading" disabled>
           <div v-for="(item, key) in shareData.goodsList" ref="listRef">
             <div class="row card-head card-main">
               <div class="goods-img-container">
@@ -37,18 +37,18 @@
                          :max="999"
                          :default-value="item.stock_temp"
                          @change="v => {
-                           onStepperChange(key, v)
-                         }
-                           " />
+      onStepperChange(key, v)
+    }
+      " />
               </div>
             </div>
             <div class="row card-main">
               <div style="flex: 1">该商品库存核对状态:</div>
               <div
                    :class="item.status != undefined
-                     ? 'hairline-btn-disable'
-                     : 'hairline-btn'
-                     "
+      ? 'hairline-btn-disable'
+      : 'hairline-btn'
+      "
                    @click="onConfirmStore(key)">
                 {{ item.status != undefined ? "已确认" : "确认库存" }}
               </div>
@@ -60,7 +60,7 @@
     </div>
 
     <template v-slot:footer>
-      <Button @click="() => router.back()">上一步</Button>
+      <Button @click="() => router.back()" v-if="!shareData.isSecretNode">上一步</Button>
       <Button
               @click="onBottomBtnClick"
               :loading="submitLoading"
@@ -81,12 +81,12 @@ import { useRouter } from "vue-router"
 import { Stepper, Button, List, Search } from "vant"
 import { showToast } from "vant"
 import { useShareData } from "@/store"
-import { COUNT_SUPPLY_STEPS } from "@/config"
 import PageContainer from "@/components/PageContainer.vue"
 const router = useRouter()
 const shareData = useShareData()
 const submitLoading = ref(false)
 const listLoading = ref(false)
+
 /** 商品库存数量控件值变化同步数量 */
 function onStepperChange(index: number, value: number) {
   let goods = shareData.goodsList[index]
@@ -95,7 +95,7 @@ function onStepperChange(index: number, value: number) {
 }
 
 const isNextAble = computed(() => {
-  return shareData.goodsList.every(item => item.status)
+  return shareData.goodsList.every(item => item.status) && !!shareData.goodsList.length
 })
 /** 点击编辑库存按钮 */
 function onEditBtnClick(index: number, status = "editing") {
@@ -150,7 +150,6 @@ function onSearch(value: any) {
 </script>
 
 <style scoped lang="less">
-
 footer {
   &>button:first-child {
     background: #ffffff;
@@ -226,7 +225,7 @@ footer {
 
   .card-body {
     flex: 1;
-    overflow:auto;
+    overflow: auto;
     margin: 5px 0;
   }
 }

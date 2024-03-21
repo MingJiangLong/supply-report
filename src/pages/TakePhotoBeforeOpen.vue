@@ -1,4 +1,3 @@
-<!-- !新需求 此页作为首页 -->
 <!-- 开门前拍照 -->
 <template>
   <PageContainer>
@@ -38,29 +37,11 @@ import Image from "@/components/Image.vue"
 import { useShareData } from "@/store";
 import { useRouter } from "vue-router";
 import { Button } from "vant";
-import { initSN, isDev } from "@/utils";
-import { onMounted } from "vue";
+import { initSN, } from "@/utils";
 import PageContainer from '@/components/PageContainer.vue'
-import { URLHelper } from "web-url-helper"
 const shareData = useShareData()
-function initPathData() {
-
-  let url = window.location.toString()
-  const urlHelper = new URLHelper(url)
-
-  if (isDev()) {
-    urlHelper.hashSearchParams.append("vm", "99900990")
-    urlHelper.hashSearchParams.append("out_trade_no", "99902380A20230209163729")
-    urlHelper.hashSearchParams.append("loginName", "18576518892")
-    urlHelper.hashSearchParams.append("is_normal_supply", 'false')
-  }
-
-  shareData.vm = urlHelper.hashSearchParams.get("vm") ?? ''
-  shareData.loginName = urlHelper.hashSearchParams.get("loginName") ?? ''
-  shareData.out_trade_no = urlHelper.hashSearchParams.get("out_trade_no") ?? ''
-  shareData.isNormalSupply = urlHelper.hashSearchParams.get("is_normal_supply") == 'false' ? false : true
-}
 const router = useRouter()
+
 /**
  * 点击示意图
  */
@@ -117,17 +98,6 @@ async function onNextStep() {
     router.push("count-before-supply")
   }
 }
-
-/** 初始化点位信息 以及商品列表信息 */
-async function initList() {
-  await shareData.fetchBaseInfo()
-  shareData.sort()
-}
-
-onMounted(() => {
-  initPathData()
-  initList()
-})
 </script>
 
 <style scoped lang="less">

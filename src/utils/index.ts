@@ -1,50 +1,42 @@
+import { isDev } from "@/config"
+import { NodeType, SupplyType } from "@/constant"
 import { submit } from "@/service"
 import { useShareData } from "@/store"
 import { v4 as uuidV4 } from "uuid"
-// const UBOX_TOKEN_KEY = 'UBOX_TOKEN_KEY'
-export default function (callback: (env: string) => void) {
-  if (import.meta.env.MODE != "prod") {
-    typeof callback === "function" && callback(import.meta.env.MODE)
+import { URLHelper } from "web-url-helper"
+
+/** 初始化H5必要数据 */
+export function initNecessaryData() {
+  const urlHelper = new URLHelper(window.location.toString())
+  if (isDev) {
+    urlHelper.hashSearchParams.append("vm", "99900990")
+    urlHelper.hashSearchParams.append("out_trade_no", "99902380A20230209163729")
+    urlHelper.hashSearchParams.append("loginName", "18576518892")
+    urlHelper.hashSearchParams.append("is_normal_supply", "true")
+    urlHelper.hashSearchParams.append("is_secret_node", "true")
   }
-}
 
-// https://h5.dev.uboxol.com/replenishment-dev/#/?to=replnm&vm=99900990&out_trade_no=907428914732
-/**
- * 从路由hash获取部分参数
- * @returns
- */
+  const shareData = useShareData()
+  shareData.vm = urlHelper.hashSearchParams.get("vm") ?? ""
+  shareData.loginName = urlHelper.hashSearchParams.get("loginName") ?? ""
+  shareData.out_trade_no = urlHelper.hashSearchParams.get("out_trade_no") ?? ""
+  const isNormalType = urlHelper.hashSearchParams.get("is_normal_supply")
 
-export function isDev() {
-  return import.meta.env.MODE === "development"
-}
-
-export function isPre() {
-  return import.meta.env.MODE === "pre"
-}
-
-export function isTesting() {
-  return import.meta.env.MODE === "testing"
-}
-export function isProd() {
-  return import.meta.env.MODE === "prod"
-}
-export function getPathBaseParams(): { [k: string]: any } {
-  if (isDev()) {
-    return {
-      vm: "99900990",
-      out_trade_no: "99902380A20230209163729",
-      loginName: "18576518892",
-    }
+  if (isNormalType === "true" || isNormalType === "false") {
+    shareData.supplyType =
+      isNormalType === "true" ? SupplyType.normal : SupplyType.count
+  } else {
+    throw new Error("获取补货类型失败!")
   }
-  let hash = window.location.hash
-  hash = hash.substring(3)
-  return hash.split("&").reduce((count, current) => {
-    let [key, value] = current.split("=")
-    return {
-      ...count,
-      [key]: value,
-    }
-  }, {})
+
+  const isSecretNode = urlHelper.hashSearchParams.get("is_secret_node")
+  if (isSecretNode === "true" || isSecretNode === "false") {
+    shareData.nodeType =
+      isSecretNode === "true" ? NodeType.secret : NodeType.normal
+  } else {
+    throw new Error("获取点位类型失败!")
+  }
+  shareData.fetchBaseInfo()
 }
 
 export function addWatermark(
@@ -106,7 +98,7 @@ export function initSN(link = false) {
 }
 
 export async function refreshToken() {
-  if (isDev()) return "yapi-uboxol"
+  if (isDev) return "yapi-uboxol"
   return await getUboxToken()
 }
 
@@ -172,4 +164,19 @@ export async function firstReport() {
   // 保存sn和transaction
   shareData.transactionId = transactionId
   shareData.sn = sn
+}
+
+export function getSteps() {
+  const shareData = useShareData()
+
+  if (shareData.nodeType === NodeType.secret) {
+    if (shareData.supplyType === SupplyType.normal) {
+      return ["开门前拍照", "补货后上报", "补货后拍照"]
+    }
+    return ["开门前拍照", "补货前盘点", "补货后上报", "补货后拍照"]
+  }
+  if (shareData.supplyType === SupplyType.normal) {
+    return ["补货后上报"]
+  }
+  return ["补货前盘点", "补货后上报"]
 }

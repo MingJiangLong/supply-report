@@ -1,59 +1,60 @@
-import { COUNT_SUPPLY_STEPS, NORMAL_SUPPLY_STEPS } from "@/config";
-import { fetchGoodsInMachine } from "@/service";
-import { defineStore } from "pinia";
-import { showToast } from "vant";
+import { COUNT_SUPPLY_STEPS, NORMAL_SUPPLY_STEPS } from "@/config"
+import { NodeType, SupplyType } from "@/constant"
+import { fetchGoodsInMachine } from "@/service"
+import { defineStore } from "pinia"
+import { showToast } from "vant"
 
-export const useShareData = defineStore('shareData', {
+export const useShareData = defineStore("shareData", {
   state: (): State => {
     return {
-      vm: '',
-      nodeName: '',
+      vm: "",
+      nodeName: "",
       goodsList: [],
-      displayImage: '',
-      reportImage: '',
-      transactionId: '',
-      out_trade_no: '',
-      sn: '',
-      loginName: '',
-      // imageBeforeOpen: '',
-      isNormalSupply: true,
+      displayImage: "",
+      reportImage: "",
+      transactionId: "",
+      out_trade_no: "",
+      sn: "",
+      loginName: "",
+
       imageInfoBeforeOpen: {
-        url: '',
-        time: ''
+        url: "",
+        time: "",
       },
       imageInfoAfterOpen: {
-        url: '',
-        time: ''
-      }
+        url: "",
+        time: "",
+      },
+      isLoadingBaseData: false,
+      nodeType: NodeType.normal,
+      supplyType: SupplyType.normal,
     }
   },
   getters: {
     TRANSACTION_ID(state) {
       return () => {
-        if (!!!state.transactionId) throw new Error("系统异常,获取transaction失败");
+        if (!!!state.transactionId)
+          throw new Error("系统异常,获取transaction失败")
         return state.transactionId
       }
     },
     SN(state) {
       return () => {
-        if (!!!state.vm) throw new Error("系统异常,获取sn失败!");
+        if (!!!state.vm) throw new Error("系统异常,获取sn失败!")
         return state.sn
       }
     },
     VM(state) {
       return () => {
-        if (!!!state.vm) throw new Error("获取机器信息失败");
+        if (!!!state.vm) throw new Error("获取机器信息失败")
         return state.vm
       }
     },
     OUT_TRADE_NO(state) {
       return () => {
-
-
-        if (!!!state.out_trade_no) throw new Error("获取订单信息失败");
+        if (!!!state.out_trade_no) throw new Error("获取订单信息失败")
         return state.out_trade_no
       }
-
     },
     LOGIN_NAME(state) {
       return () => {
@@ -80,13 +81,29 @@ export const useShareData = defineStore('shareData', {
       }
     },
     steps(state) {
-      if (state.isNormalSupply) return NORMAL_SUPPLY_STEPS
-      return COUNT_SUPPLY_STEPS
-    }
+      if (state.nodeType === NodeType.secret) {
+        if (state.supplyType === SupplyType.normal) {
+          return ["补货后上报"]
+        }
+        return ["补货前盘点", "补货后上报"]
+      }
+      if (state.supplyType === SupplyType.normal) {
+        return ["开门前拍照", "补货后上报", "补货后拍照"]
+      }
+      return ["开门前拍照", "补货前盘点", "补货后上报", "补货后拍照"]
+    },
+
+    isSecretNode(state) {
+      return state.nodeType == NodeType.secret
+    },
+    isNormalSupply(state) {
+      return state.supplyType == SupplyType.normal
+    },
   },
   actions: {
     async fetchBaseInfo() {
       try {
+        this.isLoadingBaseData = true
         const result = await fetchGoodsInMachine(this.VM())
         if (result?.head?.code != 200)
           throw new Error(result?.head?.desc ?? "服务器繁忙!")
@@ -95,82 +112,109 @@ export const useShareData = defineStore('shareData', {
         this.nodeName = nodeName
 
         // 排序mdseTypeId1 == 1001  是饮料 等于其他零食
-        this.goodsList = Array.isArray(list) ? list.map(item => ({
-          ...item,
-          stock_temp: item?.stock ?? 0,
-          recommend: 0,
-          recommend_temp: 0,
-          // replenishmentStock_temp: item?.replenishmentStock ?? 0
-        })) : []
+        this.goodsList = Array.isArray(list)
+          ? list.map(item => ({
+              ...item,
+              stock_temp: item?.stock ?? 0,
+              recommend: 0,
+              recommend_temp: 0,
+              // replenishmentStock_temp: item?.replenishmentStock ?? 0
+            }))
+          : []
       } catch (error: any) {
         showToast({
           message: error?.message,
           type: "fail",
         })
+      } finally {
+        this.isLoadingBaseData = false
       }
     },
     sort(type = 1) {
-      const temp = this.goodsList.reduce((count, current) => {
-        if (current?.mdseTypeId1 == 1001) {
-          count[0].push(current)
-        } else {
-          count[1].push(current)
-        }
-        return count
-      }, [[] as Goods[], [] as Goods[]])
+      const temp = this.goodsList.reduce(
+        (count, current) => {
+          if (current?.mdseTypeId1 == 1001) {
+            count[0].push(current)
+          } else {
+            count[1].push(current)
+          }
+          return count
+        },
+        [[] as Goods[], [] as Goods[]]
+      )
 
       if (type == 1) {
-        this.goodsList = [...temp[0].sort((a, b) => a.stock - b.stock), ...temp[1].sort((a, b) => a.stock - b.stock)]
+        this.goodsList = [
+          ...temp[0].sort((a, b) => a.stock - b.stock),
+          ...temp[1].sort((a, b) => a.stock - b.stock),
+        ]
       } else {
-        this.goodsList = [...temp[0].sort((a, b) => b.replenishmentStock - a.replenishmentStock), ...temp[1].sort((a, b) => b.replenishmentStock - a.replenishmentStock)]
+        this.goodsList = [
+          ...temp[0].sort(
+            (a, b) => b.replenishmentStock - a.replenishmentStock
+          ),
+          ...temp[1].sort(
+            (a, b) => b.replenishmentStock - a.replenishmentStock
+          ),
+        ]
       }
     },
     clearPhoto() {
-      this.imageInfoBeforeOpen = { url: "", time: '' }
-      this.imageInfoAfterOpen = { url: "", time: '' }
+      this.imageInfoBeforeOpen = { url: "", time: "" }
+      this.imageInfoAfterOpen = { url: "", time: "" }
     },
     clear() {
       this.$reset()
-    }
-
+    },
   },
   persist: true,
 })
 
 type State = {
+  /** 机器编号 */
   vm: string
+
+  /** 点位名称 */
   nodeName: string
-  goodsList: Goods[],
+
+  /** 商品名称 */
+  goodsList: Goods[]
 
   /**
    * 补货前后提交
-  */
+   */
   transactionId: string
+
   out_trade_no: string
+
   sn: string
   loginName: string
+
   displayImage: string
   reportImage: string
-  // imageBeforeOpen: string
-
-  /** 常规补货 */
-  isNormalSupply: boolean
 
   /** 开门前拍照信息 */
   imageInfoBeforeOpen: {
-
     /** 照片url */
-    url: string;
+    url: string
 
     /** 拍照时间 */
     time: string
   }
   imageInfoAfterOpen: {
-
     /** 照片url */
-    url: string;
+    url: string
 
     /** 拍照时间 */
     time: string
   }
+
+  /** 是否在加载数据 */
+  isLoadingBaseData: boolean
+
+  /** 补货类型  月度判断 常规判断 */
+  supplyType: SupplyType
+
+  /** 点位类型 常规点位 机密点位 */
+  nodeType: NodeType
 }

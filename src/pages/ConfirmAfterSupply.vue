@@ -1,7 +1,7 @@
 <template>
   <PageContainer>
     <Location />
-    <Steps :current="shareData.isNormalSupply ? 1 : 2" :steps="shareData.steps" />
+    <Steps :current="stepCurrent" :steps="shareData.steps" />
     <div class="tips">
       <div>1. 商品补货量与推荐量一致，直接确认;</div>
       <div>2. 商品补货量与推荐量不一致，根据差额加减补货后库存</div>
@@ -16,7 +16,7 @@
         <div>补货后库存</div>
       </div>
       <div class="card-body">
-        <List v-model:loading="listLoading" disabled >
+        <List v-model:loading="listLoading" disabled>
           <div v-for="(item, key) in shareData.goodsList" ref="listRef">
             <div class="row card-head card-main">
               <div class="goods-img-container">
@@ -43,18 +43,18 @@
                          :min="0"
                          :default-value="item.recommend_temp"
                          @change="v => {
-                           onStepperChange(key, v)
-                         }
-                           " />
+      onStepperChange(key, v)
+    }
+      " />
               </div>
             </div>
             <div class="row card-main">
               <div style="flex: 1">该商品补货核对状态:</div>
               <div
                    :class="item.status2 != undefined
-                     ? 'hairline-btn-disable'
-                     : 'hairline-btn'
-                     "
+      ? 'hairline-btn-disable'
+      : 'hairline-btn'
+      "
                    @click="onConfirmStore(key)">
                 {{ item.status2 != undefined ? "已确认" : "确认补货数" }}
               </div>
@@ -93,6 +93,14 @@ const isBtnAble = computed(() => {
   return shareData.goodsList.every(item => {
     return !!item.status2
   })
+})
+
+
+const stepCurrent = computed(() => {
+
+  if (shareData.isSecretNode) return 0;
+  if(shareData.isNormalSupply) return 1
+  return 2
 })
 
 const searchValue = ref('')
@@ -241,7 +249,7 @@ footer {
 
   .card-body {
     flex: 1;
-    overflow:auto;
+    overflow: auto;
     margin: 5px 0;
   }
 }
