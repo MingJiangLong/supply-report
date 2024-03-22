@@ -26,10 +26,8 @@ function goGoodsManage() {
 
   let urlHelper = new URLHelper(url);
   urlHelper.hashSearchParams.append("loginName", shareData.loginName)
-  urlHelper.hashSearchParams.append("vm", shareData.vm)
-
+  urlHelper.hashSearchParams.append("vm",shareData.vm )
   window.open(urlHelper.toString())
-
 }
 </script>
 
@@ -66,6 +64,7 @@ function goGoodsManage() {
     color: #FF6600;
     border-radius: 25px;
     border: 1px solid #FF6600;
+    margin-left: 10px;
   }
 }
 </style>

@@ -9,14 +9,21 @@ import { URLHelper } from "web-url-helper"
 export function initNecessaryData() {
   const urlHelper = new URLHelper(window.location.toString())
   if (isDev) {
-    urlHelper.hashSearchParams.append("vm", "99900990")
-    urlHelper.hashSearchParams.append("out_trade_no", "99902380A20230209163729")
-    urlHelper.hashSearchParams.append("loginName", "18576518892")
-    urlHelper.hashSearchParams.append("is_normal_supply", "false")
-    urlHelper.hashSearchParams.append("node_type", "2")
+    const temp = {
+      vm: "99900990",
+      out_trade_no: "99902380A20230209163729",
+      loginName: "18576518892",
+      is_normal_supply: "true",
+      node_type: "2",
+    }
+    Object.keys(temp).forEach(key => {
+      // @ts-ignore
+      urlHelper.hashSearchParams.append(key, temp[key])
+    })
   }
 
   const shareData = useShareData()
+  shareData.clear();
   shareData.vm = urlHelper.hashSearchParams.get("vm") ?? ""
   shareData.loginName = urlHelper.hashSearchParams.get("loginName") ?? ""
   shareData.out_trade_no = urlHelper.hashSearchParams.get("out_trade_no") ?? ""
