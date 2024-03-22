@@ -1,22 +1,21 @@
 <template>
   <PageContainer>
     <Location />
-    <Steps :current="stepCurrent" :steps="shareData.steps" />
-    <div class="tips">
-      <div>1. 商品补货量与推荐量一致，直接确认;</div>
-      <div>2. 商品补货量与推荐量不一致，根据差额加减补货后库存</div>
-    </div>
-    <Search
-            v-model="searchValue" placeholder="请输入商品名称" @search="onSearch" />
+    <Steps :current="stepCurrent" :steps="shareData.steps" v-if="shareData.steps.length > 1" />
+    <NoticeBar mode="closeable" left-icon="volume-o" text="1. 商品补货量与推荐量一致，直接确认；2. 商品补货量与推荐量不一致，根据差额加减补货后库存" />
     <div class="card">
-      <div class="row card-head" style="background: #fff8f3">
-        <div>商品图片</div>
-        <div>商品名称/ID</div>
-        <div>推荐补货数</div>
-        <div>补货后库存</div>
-      </div>
+      <Sticky>
+        <Search
+                v-model="searchValue" placeholder="请输入商品名称" @search="onSearch" />
+        <div class="row card-head" style="background: #fff8f3">
+          <div>商品图片</div>
+          <div>商品名称/ID</div>
+          <div>推荐补货数</div>
+          <div>补货后库存</div>
+        </div>
+      </Sticky>
       <div class="card-body">
-        <List v-model:loading="listLoading" disabled>
+        <List v-if="!shareData.isLoadingBaseData" v-model:loading="shareData.isLoadingBaseData" disabled>
           <div v-for="(item, key) in shareData.goodsList" ref="listRef">
             <div class="row card-head card-main">
               <div class="goods-img-container">
@@ -62,11 +61,20 @@
             <div class="van-hairline--bottom divide"></div>
           </div>
         </List>
+        <div v-else style="display: flex;justify-content: center;margin-top: 20px;">
+          <Loading size="24px" />
+        </div>
       </div>
     </div>
     <template v-slot:footer>
-      <Button @click="goBack" class="bottom-btn-1">上一步</Button>
-      <Button @click="onNextStep" class="bottom-btn" :disabled="!isBtnAble">
+
+      <Button @click="goBack" class="bottom-btn-1"
+              v-if="!shareData.isSecretNode || !shareData.isNormalSupply">上一步</Button>
+      <Button @click="submitWhenSecretNode" :loading="submitting" class="bottom-btn" :disabled="!isBtnAble"
+              v-if="shareData.isSecretNode">
+        提交
+      </Button>
+      <Button @click="onNextStep" class="bottom-btn" :disabled="!isBtnAble" v-if="!shareData.isSecretNode">
         补货完成,去拍照
       </Button>
     </template>
@@ -78,28 +86,29 @@ import Location from "@/components/Location.vue"
 import Steps from "@/components/Steps.vue"
 import { onMounted } from "vue"
 import { useRouter } from "vue-router"
-import { Stepper, List, Search, Button } from "vant"
+import { Stepper, List, Search, Button, Sticky, NoticeBar, showToast, Loading } from "vant"
 import { useShareData } from "@/store"
 import { ref } from "vue"
 import { computed } from "vue"
 import PageContainer from "@/components/PageContainer.vue"
 const router = useRouter()
 const shareData = useShareData()
-const listLoading = ref(false)
 const listRef = ref()
 
 /** 下一步按钮是可用 */
 const isBtnAble = computed(() => {
   return shareData.goodsList.every(item => {
     return !!item.status2
-  })
+  }) && shareData.goodsList.length && !shareData.isLoadingBaseData
 })
 
 
 const stepCurrent = computed(() => {
-
-  if (shareData.isSecretNode) return 0;
-  if(shareData.isNormalSupply) return 1
+  if (shareData.isSecretNode) {
+    if (shareData.isNormalSupply) return 0
+    return 1
+  };
+  if (shareData.isNormalSupply) return 1
   return 2
 })
 
@@ -149,6 +158,34 @@ function onSearch(value: any) {
   if (findIndex != -1) {
     listRef.value[findIndex]?.scrollIntoView({ block: 'center' })
   }
+}
+
+const submitting = ref(false)
+async function submitWhenSecretNode() {
+  try {
+    if (!isBtnAble.value) return
+    submitting.value = true
+    await shareData.submitWhenNormalSupply();
+    showToast({
+      message: "提交成功,3s后返回首页!",
+      type: "success",
+    })
+
+    setTimeout(() => {
+      shareData.clear()
+      window?.ucloud?.postMessage?.(
+        JSON.stringify({ code: 10003, msg: "关闭页面" })
+      )
+    }, 3000)
+  } catch (error: any) {
+    showToast({
+      message: error?.message ?? "系统异常",
+      type: "fail",
+    })
+  } finally {
+    submitting.value = false
+  }
+
 }
 
 /** 挂载时对商品列表进行排序 */
@@ -249,7 +286,6 @@ footer {
 
   .card-body {
     flex: 1;
-    overflow: auto;
     margin: 5px 0;
   }
 }

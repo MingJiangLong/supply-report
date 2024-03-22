@@ -1,8 +1,10 @@
 import { COUNT_SUPPLY_STEPS, NORMAL_SUPPLY_STEPS } from "@/config"
 import { NodeType, SupplyType } from "@/constant"
-import { fetchGoodsInMachine } from "@/service"
+import { fetchGoodsInMachine, normalSubmit, submit } from "@/service"
 import { defineStore } from "pinia"
 import { showToast } from "vant"
+import { v4 as uuidV4 } from "uuid"
+import { initSN, updateGoodsAfterCount } from "@/utils"
 
 export const useShareData = defineStore("shareData", {
   state: (): State => {
@@ -99,11 +101,25 @@ export const useShareData = defineStore("shareData", {
     isNormalSupply(state) {
       return state.supplyType == SupplyType.normal
     },
+    baseSubmitData(state) {
+      return {
+        vmCode: state.vm,
+        out_trade_no: state.out_trade_no,
+        productInfo: state.goodsList.map(item => ({
+          productId: item.productId,
+          productName: item.productName,
+          productCount: item.stock_temp,
+          productIdentifyCount: item.stock,
+        })),
+        loginName: state.loginName,
+      }
+    },
   },
   actions: {
     async fetchBaseInfo() {
       try {
         this.isLoadingBaseData = true
+        this.goodsList = []
         const result = await fetchGoodsInMachine(this.VM())
         if (result?.head?.code != 200)
           throw new Error(result?.head?.desc ?? "服务器繁忙!")
@@ -165,6 +181,43 @@ export const useShareData = defineStore("shareData", {
     },
     clear() {
       this.$reset()
+    },
+    async submitWhenNormalSupply() {
+      const transactionId = uuidV4()
+      const sn = initSN()
+      await normalSubmit({
+        transactionId,
+        sn,
+        ...this.baseSubmitData,
+        prePictures: this.imageInfoBeforeOpen.url,
+        prePictureTime: this.imageInfoBeforeOpen.time,
+        pictures: this.imageInfoAfterOpen.url,
+        pictureTime: this.imageInfoAfterOpen.time,
+      })
+    },
+    async submitWhenCountSupply(moment: 0 | 1) {
+      let transactionId = this.transactionId
+      let sn = this.sn
+
+      if (moment == 0) {
+        transactionId = uuidV4()
+        sn = initSN()
+      }
+      const submitResult = await submit({
+        ...this.baseSubmitData,
+        transactionId,
+        sn,
+        moment,
+        pictures: this.imageInfoBeforeOpen.url,
+        pictureTime: this.imageInfoBeforeOpen.time,
+      })
+      if (submitResult?.head?.code != 200)
+        throw new Error(submitResult?.head?.desc)
+
+      if (moment == 0) {
+        this.transactionId = transactionId
+        this.sn = sn
+      }
     },
   },
   persist: true,

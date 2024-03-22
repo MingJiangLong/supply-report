@@ -1,41 +1,71 @@
 <template>
-  <div style="display: flex;flex-direction: row;">
-    <div>机器号</div>
-    <div>{{ shareData.vm }}</div>
+  <div class="location-card">
+    <div style="flex: 1;">
+      <div class="main-desc">机器号:{{ shareData.vm }}</div>
+      <div class="sub-desc">{{ shareData.nodeName }}</div>
+    </div>
+    <div class="btn" @click="goGoodsManage">
+      商品管理
+    </div>
   </div>
-  <div>{{ shareData.nodeName }}</div>
-  <!-- <div>
-    <img class="icon" src="@/assets/img/icon_machine.png" />
-    <span class="h18">{{ shareData.vm }}</span>
-    <span class="h14" style="color: #737373">({{ shareData.nodeName }})</span>
-  </div> -->
 </template>
 
 <script setup lang="ts">
+import { isProd } from "@/config";
+import { isPre } from "@/config";
 import { useShareData } from "@/store";
 import { } from "vue"
-import { Row, Col } from 'vant'
+import { URLHelper } from "web-url-helper";
 const shareData = useShareData()
 
+
+function goGoodsManage() {
+  let url = 'https://h5.dev.uboxol.com/goods-manage-dev/#/goods/manage'
+  if (isPre) url = 'https://h5.dev.uboxol.com/goods-manage-pre/#/goods/manage'
+  if (isProd) url = 'https://h5.uboxol.com/goods-manage/#/goods/manage'
+
+  let urlHelper = new URLHelper(url);
+  urlHelper.hashSearchParams.append("loginName", shareData.loginName)
+  urlHelper.hashSearchParams.append("vm", shareData.vm)
+
+  window.open(urlHelper.toString())
+
+}
 </script>
 
 <style scoped lang="less">
 @icon-size: 14px;
 
-img[class="icon"] {
-  width: @icon-size;
-  height: @icon-size;
-}
+.location-card {
+  display: flex;
+  flex-direction: row;
+  padding: 18px 14px;
+  background: #ffffff;
+  border-radius: 8px;
+  align-items: center;
+  margin: 12px 0;
 
-span[class="h18"] {
-  padding-left: 6px;
-}
+  .main-desc {
+    font-weight: 500;
+    font-size: 16px;
+    color: #3A3A3A;
+  }
 
-span[class="h14"] {
-  padding-left: 4px;
-}
+  .sub-desc {
+    font-weight: 400;
+    font-size: 14px;
+    color: #737373;
+    margin-top: 8px;
+  }
 
-div {
-  padding: 24px 0 12px;
+  .btn {
+    height: 30px;
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    color: #FF6600;
+    border-radius: 25px;
+    border: 1px solid #FF6600;
+  }
 }
 </style>

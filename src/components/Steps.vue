@@ -1,28 +1,22 @@
 <template>
-  <div class="steps">
-    <template v-for="(item, key) in realSteps" :key="key">
-      <div class="ignore-point-container">
-        <div v-if="key < props.current" class="ignore-active"></div>
-        <div
-             v-else
-             class="ignore-not-active"
-             :style="{ background: key <= $props.current ? '#ff7500' : '#d2d2d2' }"></div>
-        <span
-              :style="{
-                color: key <= props.current ? '#ff7500' : '#d2d2d2',
-                fontWeight: key <= props.current ? '500' : '400',
-              }">{{ item }}</span>
-      </div>
-      <div
-           class="step-line"
-           v-if="key != realSteps.length - 1"
-           :style="{ background: key < props.current ? '#ff7500' : '#DADADA' }"></div>
-    </template>
-  </div>
+  <Steps
+         v-if="realSteps.length > 1"
+         :active="props.current"
+         inactive-color="#D1D4DE"
+         active-color="#FF7500"
+         finish-icon="checked">
+    <Step v-for="(item, key) in realSteps" :key="key">
+      {{ item }}
+      <template v-slot:active-icon>
+        <div style="height: 8px;width: 8px;border-radius: 8px;background: #FF7500;"></div>
+      </template>
+    </Step>
+  </Steps>
 </template>
 
 <script setup lang="ts">
 import { reactive, computed } from "vue"
+import { Steps, Step } from 'vant'
 const realSteps = computed(() => {
   return props.steps ?? steps
 })

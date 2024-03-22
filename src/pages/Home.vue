@@ -1,18 +1,20 @@
-<!-- !第二版之后，此页面不再作为首页 补货前盘点 -->
 <template>
   <PageContainer>
     <Location />
-    <Steps :current="1" :steps="shareData.steps" />
-    <Search v-model="searchValue" placeholder="请输入商品名称" @search="onSearch" />
+    <Steps :current="stepCurrent" :steps="shareData.steps" />
+    <NoticeBar left-icon="volume-o" text="开门后确认库存" background="transparent" />
     <div class="card">
-      <div class="row card-head" style="background: #fff8f3">
-        <div>商品图片</div>
-        <div>商品名称/ID</div>
-        <div>系统库存</div>
-        <div>修正库存</div>
-      </div>
+      <Sticky>
+        <Search v-model="searchValue" placeholder="请输入商品名称" @search="onSearch" />
+        <div class="row card-head" style="background: #fff8f3">
+          <div>商品图片</div>
+          <div>商品名称/ID</div>
+          <div>系统库存</div>
+          <div>修正库存</div>
+        </div>
+      </Sticky>
       <div class="card-body">
-        <List v-model:loading="listLoading" disabled>
+        <List v-if="!shareData.isLoadingBaseData" disabled>
           <div v-for="(item, key) in shareData.goodsList" ref="listRef">
             <div class="row card-head card-main">
               <div class="goods-img-container">
@@ -56,6 +58,9 @@
             <div class="van-hairline--bottom divide"></div>
           </div>
         </List>
+        <div v-else style="display: flex;justify-content: center;margin-top: 20px;">
+          <Loading size="24px" />
+        </div>
       </div>
     </div>
 
@@ -72,21 +77,23 @@
 </template>
 
 <script setup lang="ts">
-// import Alarm from "@/components/Alarm.vue"
 import Location from "@/components/Location.vue"
 import Steps from "@/components/Steps.vue"
-import { firstReport } from "@/utils"
+import { updateGoodsAfterCount } from "@/utils"
 import { computed, ref } from "vue"
 import { useRouter } from "vue-router"
-import { Stepper, Button, List, Search } from "vant"
-import { showToast } from "vant"
+import { Stepper, Button, List, Search, NoticeBar, Loading } from "vant"
+import { showToast, Sticky } from "vant"
 import { useShareData } from "@/store"
 import PageContainer from "@/components/PageContainer.vue"
 const router = useRouter()
 const shareData = useShareData()
 const submitLoading = ref(false)
-const listLoading = ref(false)
+const stepCurrent = computed(() => {
+  if (shareData.isSecretNode) return 0
 
+  return 1
+})
 /** 商品库存数量控件值变化同步数量 */
 function onStepperChange(index: number, value: number) {
   let goods = shareData.goodsList[index]
@@ -95,7 +102,7 @@ function onStepperChange(index: number, value: number) {
 }
 
 const isNextAble = computed(() => {
-  return shareData.goodsList.every(item => item.status) && !!shareData.goodsList.length
+  return shareData.goodsList.every(item => item.status) && !!shareData.goodsList.length && !shareData.isLoadingBaseData
 })
 /** 点击编辑库存按钮 */
 function onEditBtnClick(index: number, status = "editing") {
@@ -112,8 +119,10 @@ function onEditBtnClick(index: number, status = "editing") {
  */
 async function onBottomBtnClick() {
   try {
+    if (!isNextAble.value) return;
     submitLoading.value = true
-    await firstReport()
+    await shareData.submitWhenCountSupply(0)
+    updateGoodsAfterCount()
     router.push("confirm-after-supply")
   } catch (error: any) {
     showToast({
@@ -197,7 +206,7 @@ footer {
   display: flex;
   flex-direction: column;
   flex: 1;
-  height: 0;
+  // height: 0;
   background: var(--ubox-page-bg);
 
   .goods-img-container {
@@ -224,14 +233,12 @@ footer {
   }
 
   .card-body {
-    flex: 1;
-    overflow: auto;
     margin: 5px 0;
   }
 }
 
 .card-main {
-  padding: 10px;
+  padding: 5px 10px;
   display: flex;
   align-items: center;
   background: #ffffff;

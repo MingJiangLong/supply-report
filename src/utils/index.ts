@@ -12,8 +12,8 @@ export function initNecessaryData() {
     urlHelper.hashSearchParams.append("vm", "99900990")
     urlHelper.hashSearchParams.append("out_trade_no", "99902380A20230209163729")
     urlHelper.hashSearchParams.append("loginName", "18576518892")
-    urlHelper.hashSearchParams.append("is_normal_supply", "true")
-    urlHelper.hashSearchParams.append("is_secret_node", "true")
+    urlHelper.hashSearchParams.append("is_normal_supply", "false")
+    urlHelper.hashSearchParams.append("node_type", "2")
   }
 
   const shareData = useShareData()
@@ -29,14 +29,36 @@ export function initNecessaryData() {
     throw new Error("获取补货类型失败!")
   }
 
-  const isSecretNode = urlHelper.hashSearchParams.get("is_secret_node")
-  if (isSecretNode === "true" || isSecretNode === "false") {
-    shareData.nodeType =
-      isSecretNode === "true" ? NodeType.secret : NodeType.normal
+  const nodeType = urlHelper.hashSearchParams.get("node_type")
+  if (nodeType == "1" || nodeType === "2") {
+    shareData.nodeType = +nodeType
   } else {
     throw new Error("获取点位类型失败!")
   }
   shareData.fetchBaseInfo()
+}
+
+/** 盘点之后更新数据,不需要盘点也可以调用才方法更新商品数据 */
+export function updateGoodsAfterCount() {
+  const shareData = useShareData()
+  /** 是否为分拣机 */
+  const isSortTypeMachine = shareData.goodsList.some(
+    item => +item.lastStockNum > 0
+  )
+  shareData.goodsList = shareData.goodsList.map(item => {
+    /** 非分拣机推荐补货数 =  上次补货后库存 - 修正库存*/
+    let temp = item.replenishmentStock - item.stock_temp
+    let recommendNumber = temp >= 0 ? temp : 0
+    return {
+      ...item,
+      // 非分拣机: 推荐补货数 =  上次补货后库存 - 修正库存; 分拣机: 推荐补货数 = lastStockNum(备货数)
+      recommend: isSortTypeMachine ? +item?.lastStockNum : recommendNumber, // 推荐补货数
+      // 分拣机:补货后库存 = 推荐补货数 + 修正库存; 非分拣机:补货后库存 = replenishmentStock (上次补货后库存)
+      recommend_temp: isSortTypeMachine
+        ? item.lastStockNum + item.stock_temp
+        : item.replenishmentStock, // 补货后库存
+    }
+  })
 }
 
 export function addWatermark(
@@ -152,14 +174,6 @@ export async function firstReport() {
         ? item.lastStockNum + item.stock_temp
         : item.replenishmentStock, // 补货后库存
     }
-    // /** 推荐补货数 =  上次补货后库存 - 修正库存*/
-    // let temp = item.replenishmentStock - item.stock_temp
-    // let lockNumber = isNaN(+item?.lastStockNum) ? temp : +item.lastStockNum < 0 ? temp : +item.lastStockNum
-    // return {
-    //   ...item,
-    //   recommend: lockNumber,// 推荐补货数
-    //   recommend_temp: item.replenishmentStock,// 补货后库存
-    // }
   })
   // 保存sn和transaction
   shareData.transactionId = transactionId

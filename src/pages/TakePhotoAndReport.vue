@@ -41,9 +41,7 @@ import eg_big from "@/assets/img/eg_big.png"
 import { ref } from "vue"
 import { useRouter } from "vue-router"
 import { Button, showToast } from "vant"
-import { normalSubmit, submit } from "@/service"
 import { initSN } from "@/utils"
-import { v4 as uuidV4 } from "uuid"
 const shareData = useShareData()
 const router = useRouter()
 const submitLoading = ref(false)
@@ -53,12 +51,10 @@ function onUpload(dataSource: string) {
     url: dataSource,
     time: initSN(true)
   }
-  // shareData.reportImage = dataSource
 }
 
 
 function onDeleteImage() {
-  // shareData.reportImage = ""
   shareData.imageInfoAfterOpen.time = ''
   shareData.imageInfoAfterOpen.url = ''
 }
@@ -68,7 +64,6 @@ function onEGImagePreview() {
   router.push("preview")
 }
 function onImagePreview() {
-  // shareData.displayImage = shareData.reportImage
   shareData.displayImage = shareData.imageInfoAfterOpen.url
   router.push("preview")
 }
@@ -79,45 +74,11 @@ async function onSubmit() {
   try {
     if (haveSubmit.value) return
     submitLoading.value = true
-
     let result: any
     if (shareData.isNormalSupply) {
-      const transactionId = uuidV4()
-      const sn = initSN()
-      result = await normalSubmit({
-        vmCode: shareData.VM(),
-        transactionId,
-        sn,
-        loginName: shareData.LOGIN_NAME(),
-        productInfo: shareData.goodsList.map(item => ({
-          productId: item.productId,
-          productName: item.productName,
-          productCount: item.recommend_temp,
-        })),
-        out_trade_no: shareData.OUT_TRADE_NO(),
-        prePictures: shareData.imageInfoBeforeOpen.url,
-        prePictureTime: shareData.imageInfoBeforeOpen.time,
-        pictures: shareData.imageInfoAfterOpen.url,
-        pictureTime: shareData.imageInfoAfterOpen.time
-
-      })
+      result = await shareData.submitWhenNormalSupply()
     } else {
-      result = await submit({
-        vmCode: shareData.VM(),
-        moment: 1,
-        transactionId: shareData.TRANSACTION_ID(),
-        out_trade_no: shareData.OUT_TRADE_NO(),
-        sn: shareData.SN(),
-        loginName: shareData.LOGIN_NAME(),
-        productInfo: shareData.goodsList.map(item => ({
-          productId: item.productId,
-          productName: item.productName,
-          productCount: item.recommend_temp,
-        })),
-        pictures: shareData.imageAfterOpen(),
-        pictureTime: shareData.imageInfoAfterOpen.time,
-      })
-
+      result = await shareData.submitWhenCountSupply(1)
     }
     if (result?.head?.code != 200) throw new Error(result?.head?.desc)
     haveSubmit.value = true
