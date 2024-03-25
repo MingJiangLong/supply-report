@@ -101,16 +101,19 @@ export const useShareData = defineStore("shareData", {
       return state.supplyType == SupplyType.normal
     },
     baseSubmitData(state) {
-      return {
-        vmCode: state.vm,
-        out_trade_no: state.out_trade_no,
-        productInfo: state.goodsList.map(item => ({
-          productId: item.productId,
-          productName: item.productName,
-          productCount: item.stock_temp,
-          productIdentifyCount: item.stock,
-        })),
-        loginName: state.loginName,
+      return (moment: number) => {
+        return {
+          vmCode: state.vm,
+          out_trade_no: state.out_trade_no,
+          productInfo: state.goodsList.map(item => ({
+            productId: item.productId,
+            productName: item.productName,
+            productCount: item.stock_temp,
+            productIdentifyCount:
+              moment == 1 ? item.recommend_temp : item.stock_temp,
+          })),
+          loginName: state.loginName,
+        }
       }
     },
   },
@@ -187,7 +190,7 @@ export const useShareData = defineStore("shareData", {
       return normalSubmit({
         transactionId,
         sn,
-        ...this.baseSubmitData,
+        ...this.baseSubmitData(1),
         prePictures: this.imageInfoBeforeOpen.url,
         prePictureTime: this.imageInfoBeforeOpen.time,
         pictures: this.imageInfoAfterOpen.url,
@@ -203,7 +206,7 @@ export const useShareData = defineStore("shareData", {
         sn = initSN()
       }
       const submitResult = await submit({
-        ...this.baseSubmitData,
+        ...this.baseSubmitData(moment),
         transactionId,
         sn,
         moment,

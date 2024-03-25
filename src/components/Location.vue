@@ -11,24 +11,31 @@
 </template>
 
 <script setup lang="ts">
-import { isProd } from "@/config";
-import { isPre } from "@/config";
 import { useShareData } from "@/store";
 import { } from "vue"
-import { URLHelper } from "web-url-helper";
 const shareData = useShareData()
 
 
 function goGoodsManage() {
-  let url = 'https://h5.dev.uboxol.com/goods-manage-dev/#/goods/manage'
-  if (isPre) url = 'https://h5.dev.uboxol.com/goods-manage-pre/#/goods/manage'
-  if (isProd) url = 'https://h5.uboxol.com/goods-manage/#/goods/manage'
+  try {
+    const data = {
+      code: 50005,
+      msg: '打开商品管理',
+      data: {}
+    }
+    window.ucloud.postMessage(JSON.stringify(data))
+  } catch (err) {
+    console.log('客户端-调用失败!')
+  }
+  // let url = 'https://h5.dev.uboxol.com/goods-manage-dev/#/goods/manage'
+  // if (isPre) url = 'https://h5.dev.uboxol.com/goods-manage-pre/#/goods/manage'
+  // if (isProd) url = 'https://h5.uboxol.com/goods-manage/#/goods/manage'
 
-  let urlHelper = new URLHelper(url);
-  urlHelper.hashSearchParams.append("loginName", shareData.loginName)
-  urlHelper.hashSearchParams.append("vm",shareData.vm )
-  window.location.href=urlHelper.toString()
-  // window.open(urlHelper.toString())
+  // let urlHelper = new URLHelper(url);
+  // urlHelper.hashSearchParams.append("loginName", shareData.loginName)
+  // urlHelper.hashSearchParams.append("vm",shareData.vm )
+  // window.location.href=urlHelper.toString()
+  // // window.open(urlHelper.toString())
 }
 </script>
 
