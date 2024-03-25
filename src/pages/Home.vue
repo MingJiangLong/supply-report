@@ -121,7 +121,8 @@ async function onBottomBtnClick() {
   try {
     if (!isNextAble.value) return;
     submitLoading.value = true
-    await shareData.submitWhenCountSupply(0)
+    const result = await shareData.submitWhenCountSupply(0)
+    if (result?.head.code != 200) throw new Error(result.head.desc);
     updateGoodsAfterCount()
     router.push("confirm-after-supply")
   } catch (error: any) {

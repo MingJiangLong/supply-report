@@ -1,8 +1,6 @@
 import { isDev } from "@/config"
 import { NodeType, SupplyType } from "@/constant"
-import { submit } from "@/service"
 import { useShareData } from "@/store"
-import { v4 as uuidV4 } from "uuid"
 import { URLHelper } from "web-url-helper"
 
 /** 初始化H5必要数据 */

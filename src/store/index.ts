@@ -213,13 +213,11 @@ export const useShareData = defineStore("shareData", {
         pictures: this.imageInfoBeforeOpen.url,
         pictureTime: this.imageInfoBeforeOpen.time,
       })
-      if (submitResult?.head?.code != 200)
-        throw new Error(submitResult?.head?.desc)
-
-      if (moment == 0) {
+      if (submitResult?.head?.code == 200 && moment == 0) {
         this.transactionId = transactionId
         this.sn = sn
       }
+      return submitResult
     },
   },
   persist: true,
