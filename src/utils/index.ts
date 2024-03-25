@@ -142,51 +142,6 @@ export const getUboxToken = () => {
     }
   })
 }
-
-export async function firstReport() {
-  const shareData = useShareData()
-  const transactionId = uuidV4()
-  const sn = initSN()
-  const submitResult = await submit({
-    vmCode: shareData.VM(),
-    moment: 0,
-    transactionId,
-    out_trade_no: shareData.OUT_TRADE_NO(),
-    productInfo: shareData.goodsList.map(item => ({
-      productId: item.productId,
-      productName: item.productName,
-      productCount: item.stock_temp,
-      productIdentifyCount: item.stock,
-    })),
-    sn,
-    loginName: shareData.LOGIN_NAME(),
-    pictures: shareData.imageBeforeOpen(),
-    pictureTime: shareData.imageInfoBeforeOpen.time,
-  })
-  if (submitResult?.head?.code != 200) throw new Error(submitResult?.head?.desc)
-  shareData.goodsList = shareData.goodsList.map(item => {
-    /** 非分拣机推荐补货数 =  上次补货后库存 - 修正库存*/
-    let temp = item.replenishmentStock - item.stock_temp
-    let recommendNumber = temp >= 0 ? temp : 0
-
-    // 分拣机(分拣机才有备货数)
-    const isSortTypeMachine = +item.lastStockNum > 0
-
-    return {
-      ...item,
-      // 非分拣机: 推荐补货数 =  上次补货后库存 - 修正库存; 分拣机: 推荐补货数 = lastStockNum(备货数)
-      recommend: isSortTypeMachine ? +item?.lastStockNum : recommendNumber, // 推荐补货数
-      // 分拣机:补货后库存 = 推荐补货数 + 修正库存; 非分拣机:补货后库存 = replenishmentStock (上次补货后库存)
-      recommend_temp: isSortTypeMachine
-        ? item.lastStockNum + item.stock_temp
-        : item.replenishmentStock, // 补货后库存
-    }
-  })
-  // 保存sn和transaction
-  shareData.transactionId = transactionId
-  shareData.sn = sn
-}
-
 export function getSteps() {
   const shareData = useShareData()
 
