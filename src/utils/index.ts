@@ -3,7 +3,6 @@ import { NodeType, SupplyType } from "@/constant"
 import { submit } from "@/service"
 import { useShareData } from "@/store"
 import { v4 as uuidV4 } from "uuid"
-import { showToast } from "vant"
 import { URLHelper } from "web-url-helper"
 
 /** 初始化H5必要数据 */
@@ -15,7 +14,7 @@ export function initNecessaryData() {
       out_trade_no: "99902380A20230209163729",
       loginName: "18576518892",
       is_normal_supply: "true",
-      node_type: "2",
+      node_type: "1",
     }
     Object.keys(temp).forEach(key => {
       // @ts-ignore
@@ -35,13 +34,13 @@ export function initNecessaryData() {
     shareData.supplyType =
       isNormalType === "true" ? SupplyType.normal : SupplyType.count
   } else {
-    return showToast({ message: "获取补货类型失败!" })
+    shareData.supplyType = SupplyType.normal
   }
 
   if (nodeType == "1" || nodeType === "2") {
     shareData.nodeType = +nodeType
   } else {
-    return showToast({ message: "获取点位类型失败!" })
+    shareData.nodeType = NodeType.normal
   }
   shareData.fetchBaseInfo()
 }

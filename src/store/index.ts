@@ -184,7 +184,7 @@ export const useShareData = defineStore("shareData", {
     async submitWhenNormalSupply() {
       const transactionId = uuidV4()
       const sn = initSN()
-      await normalSubmit({
+      return normalSubmit({
         transactionId,
         sn,
         ...this.baseSubmitData,

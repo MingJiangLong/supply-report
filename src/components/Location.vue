@@ -27,7 +27,8 @@ function goGoodsManage() {
   let urlHelper = new URLHelper(url);
   urlHelper.hashSearchParams.append("loginName", shareData.loginName)
   urlHelper.hashSearchParams.append("vm",shareData.vm )
-  window.open(urlHelper.toString())
+  window.location.href=urlHelper.toString()
+  // window.open(urlHelper.toString())
 }
 </script>
 

@@ -80,6 +80,9 @@ async function onSubmit() {
     } else {
       result = await shareData.submitWhenCountSupply(1)
     }
+
+    console.log(result);
+    
     if (result?.head?.code != 200) throw new Error(result?.head?.desc)
     haveSubmit.value = true
 
