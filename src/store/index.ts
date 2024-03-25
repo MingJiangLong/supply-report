@@ -108,9 +108,8 @@ export const useShareData = defineStore("shareData", {
           productInfo: state.goodsList.map(item => ({
             productId: item.productId,
             productName: item.productName,
-            productCount: item.stock_temp,
-            productIdentifyCount:
-              moment == 1 ? item.recommend_temp : item.stock_temp,
+            productCount: moment == 1 ? item.recommend_temp : item.stock_temp,
+            productIdentifyCount: item.stock,
           })),
           loginName: state.loginName,
         }
