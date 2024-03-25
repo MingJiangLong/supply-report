@@ -1,10 +1,9 @@
-import { COUNT_SUPPLY_STEPS, NORMAL_SUPPLY_STEPS } from "@/config"
 import { NodeType, SupplyType } from "@/constant"
 import { fetchGoodsInMachine, normalSubmit, submit } from "@/service"
 import { defineStore } from "pinia"
 import { showToast } from "vant"
 import { v4 as uuidV4 } from "uuid"
-import { initSN, updateGoodsAfterCount } from "@/utils"
+import { initSN } from "@/utils"
 
 export const useShareData = defineStore("shareData", {
   state: (): State => {

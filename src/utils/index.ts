@@ -3,6 +3,7 @@ import { NodeType, SupplyType } from "@/constant"
 import { submit } from "@/service"
 import { useShareData } from "@/store"
 import { v4 as uuidV4 } from "uuid"
+import { showToast } from "vant"
 import { URLHelper } from "web-url-helper"
 
 /** 初始化H5必要数据 */
@@ -23,24 +24,24 @@ export function initNecessaryData() {
   }
 
   const shareData = useShareData()
-  shareData.clear();
+  shareData.clear()
   shareData.vm = urlHelper.hashSearchParams.get("vm") ?? ""
   shareData.loginName = urlHelper.hashSearchParams.get("loginName") ?? ""
   shareData.out_trade_no = urlHelper.hashSearchParams.get("out_trade_no") ?? ""
   const isNormalType = urlHelper.hashSearchParams.get("is_normal_supply")
+  const nodeType = urlHelper.hashSearchParams.get("node_type")
 
   if (isNormalType === "true" || isNormalType === "false") {
     shareData.supplyType =
       isNormalType === "true" ? SupplyType.normal : SupplyType.count
   } else {
-    throw new Error("获取补货类型失败!")
+    return showToast({ message: "获取补货类型失败!" })
   }
 
-  const nodeType = urlHelper.hashSearchParams.get("node_type")
   if (nodeType == "1" || nodeType === "2") {
     shareData.nodeType = +nodeType
   } else {
-    throw new Error("获取点位类型失败!")
+    return showToast({ message: "获取点位类型失败!" })
   }
   shareData.fetchBaseInfo()
 }
