@@ -12,7 +12,7 @@ export function initNecessaryData() {
       out_trade_no: "99902380A20230209163729",
       loginName: "18576518892",
       is_normal_supply: "true",
-      node_type: "1",
+      node_type: "2",
     }
     Object.keys(temp).forEach(key => {
       // @ts-ignore
@@ -35,7 +35,7 @@ export function initNecessaryData() {
     shareData.supplyType = SupplyType.normal
   }
 
-  if (nodeType == "1" || nodeType === "2") {
+  if (nodeType == "1" || nodeType == "2") {
     shareData.nodeType = +nodeType
   } else {
     shareData.nodeType = NodeType.normal
@@ -56,12 +56,14 @@ export function updateGoodsAfterCount() {
     let recommendNumber = temp >= 0 ? temp : 0
     return {
       ...item,
-      // 非分拣机: 推荐补货数 =  上次补货后库存 - 修正库存; 分拣机: 推荐补货数 = lastStockNum(备货数)
+      //  分拣机: 推荐补货数 = lastStockNum(备货数); 非分拣机: 推荐补货数 =  上次补货后库存 - 修正库存;
       recommend: isSortTypeMachine ? +item?.lastStockNum : recommendNumber, // 推荐补货数
-      // 分拣机:补货后库存 = 推荐补货数 + 修正库存; 非分拣机:补货后库存 = replenishmentStock (上次补货后库存)
-      recommend_temp: isSortTypeMachine
-        ? item.lastStockNum + item.stock_temp
-        : item.replenishmentStock, // 补货后库存
+
+      // 分拣机:补货后库存 = 推荐补货数 + 修正库存;    非分拣机:补货后库存 = replenishmentStock (上次补货后库存)
+      recommend_temp: item.lastStockNum + item.stock_temp,
+      // recommend_temp: isSortTypeMachine
+      //   ? item.lastStockNum + item.stock_temp
+      //   : item.replenishmentStock, // 补货后库存
     }
   })
 }

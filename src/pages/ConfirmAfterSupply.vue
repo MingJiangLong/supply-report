@@ -2,7 +2,14 @@
   <PageContainer>
     <Location />
     <Steps :current="stepCurrent" :steps="shareData.steps" v-if="shareData.steps.length > 1" />
-    <NoticeBar mode="closeable" left-icon="volume-o" text="1. 商品补货量与推荐量一致，直接确认；2. 商品补货量与推荐量不一致，根据差额加减补货后库存" />
+    <!-- <NoticeBar mode="closeable" left-icon="volume-o" text="1. 商品补货量与推荐量一致，直接确认；2. 商品补货量与推荐量不一致，根据差额加减补货后库存" /> -->
+    <div style="background:#FFF0E6;padding:10px;border-radius: 8px;color:#FF7108;font-size: 13px;margin-bottom:10px">
+      <div>
+        <Icon name="warning-o"/>
+        提示信息</div>
+      <div style="margin-top:3px">1. 商品补货量与推荐量一致，直接确认；</div>
+      <div style="margin-top:3px">2. 商品补货量与推荐量不一致，根据差额加减补货后库存</div>
+    </div>
     <div class="card">
       <Sticky>
         <Search
@@ -86,7 +93,7 @@ import Location from "@/components/Location.vue"
 import Steps from "@/components/Steps.vue"
 import { onMounted } from "vue"
 import { useRouter } from "vue-router"
-import { Stepper, List, Search, Button, Sticky, NoticeBar, showToast, Loading } from "vant"
+import { Stepper, List, Search, Button, Sticky, NoticeBar, showToast, Loading, Icon } from "vant"
 import { useShareData } from "@/store"
 import { ref } from "vue"
 import { computed } from "vue"
@@ -167,7 +174,7 @@ async function submitWhenSecretNode() {
     submitting.value = true
     await shareData.submitWhenNormalSupply();
     showToast({
-      message: "提交成功,3s后返回首页!",
+      message: "提交成功",
       type: "success",
     })
 
