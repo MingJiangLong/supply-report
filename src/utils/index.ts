@@ -7,15 +7,14 @@ import { URLHelper } from "web-url-helper"
 export function initNecessaryData() {
   const urlHelper = new URLHelper(window.location.toString())
   if (isDev) {
-    const temp = {
+    const temp: Record<string, string> = {
       vm: "99900990",
       out_trade_no: "99902380A20230209163729",
       loginName: "18576518892",
       is_normal_supply: "false",
       node_type: "2",
     }
-    Object.keys(temp).forEach(key => {
-      // @ts-ignore
+    Object.keys(temp).forEach((key: string) => {
       urlHelper.hashSearchParams.append(key, temp[key])
     })
   }
