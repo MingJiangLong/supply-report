@@ -5,8 +5,9 @@
     <!-- <NoticeBar mode="closeable" left-icon="volume-o" text="1. 商品补货量与推荐量一致，直接确认；2. 商品补货量与推荐量不一致，根据差额加减补货后库存" /> -->
     <div style="background:#FFF0E6;padding:10px;border-radius: 8px;color:#FF7108;font-size: 13px;margin-bottom:10px">
       <div>
-        <Icon name="warning-o"/>
-        提示信息</div>
+        <Icon name="warning-o" />
+        提示信息
+      </div>
       <div style="margin-top:3px">1. 商品补货量与推荐量一致，直接确认；</div>
       <div style="margin-top:3px">2. 商品补货量与推荐量不一致，根据差额加减补货后库存</div>
     </div>

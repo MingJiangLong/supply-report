@@ -79,7 +79,7 @@
 <script setup lang="ts">
 import Location from "@/components/Location.vue"
 import Steps from "@/components/Steps.vue"
-import { updateGoodsAfterCount } from "@/utils"
+import { countRecommendAndAfterSupplyNum } from "@/utils"
 import { computed, ref } from "vue"
 import { useRouter } from "vue-router"
 import { Stepper, Button, List, Search, NoticeBar, Loading } from "vant"
@@ -123,7 +123,7 @@ async function onBottomBtnClick() {
     submitLoading.value = true
     const result = await shareData.submitWhenCountSupply(0)
     if (result?.head.code != 200) throw new Error(result.head.desc);
-    updateGoodsAfterCount()
+    shareData.goodsList = countRecommendAndAfterSupplyNum(shareData.goodsList)
     router.push("confirm-after-supply")
   } catch (error: any) {
     showToast({

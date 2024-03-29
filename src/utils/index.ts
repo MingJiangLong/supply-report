@@ -11,7 +11,7 @@ export function initNecessaryData() {
       vm: "99900990",
       out_trade_no: "99902380A20230209163729",
       loginName: "18576518892",
-      is_normal_supply: "true",
+      is_normal_supply: "false",
       node_type: "2",
     }
     Object.keys(temp).forEach(key => {
@@ -43,16 +43,14 @@ export function initNecessaryData() {
   shareData.fetchBaseInfo()
 }
 
-/** 盘点之后更新数据,不需要盘点也可以调用才方法更新商品数据 */
-export function updateGoodsAfterCount() {
-  const shareData = useShareData()
+/** 计算推荐补货数和补货后库存 */
+export function countRecommendAndAfterSupplyNum(list: Goods[]) {
   /** 是否为分拣机 */
-  const isSortTypeMachine = shareData.goodsList.some(
-    item => +item.lastStockNum > 0
-  )
-  shareData.goodsList = shareData.goodsList.map(item => {
+  const isSortTypeMachine = list.some(item => +item.lastStockNum > 0)
+  return list.map(item => {
     /** 非分拣机推荐补货数 =  上次补货后库存 - 修正库存*/
     let temp = item.replenishmentStock - item.stock_temp
+
     let recommendNumber = temp >= 0 ? temp : 0
     return {
       ...item,
@@ -60,10 +58,10 @@ export function updateGoodsAfterCount() {
       recommend: isSortTypeMachine ? +item?.lastStockNum : recommendNumber, // 推荐补货数
 
       // 分拣机:补货后库存 = 推荐补货数 + 修正库存;    非分拣机:补货后库存 = replenishmentStock (上次补货后库存)
-      recommend_temp: item.lastStockNum + item.stock_temp,
-      // recommend_temp: isSortTypeMachine
-      //   ? item.lastStockNum + item.stock_temp
-      //   : item.replenishmentStock, // 补货后库存
+      // recommend_temp: item.lastStockNum + item.stock_temp,
+      recommend_temp: isSortTypeMachine
+        ? item.lastStockNum + item.stock_temp
+        : item.replenishmentStock, // 补货后库存
     }
   })
 }

@@ -37,7 +37,7 @@ import Image from "@/components/Image.vue"
 import { useShareData } from "@/store";
 import { useRouter } from "vue-router";
 import { Button } from "vant";
-import { initSN, updateGoodsAfterCount, } from "@/utils";
+import { initSN, } from "@/utils";
 import PageContainer from '@/components/PageContainer.vue'
 const shareData = useShareData()
 const router = useRouter()
@@ -76,7 +76,6 @@ const loading = ref(false)
  */
 async function onNextStep() {
   if (shareData.isNormalSupply) {
-    updateGoodsAfterCount()
     router.push("confirm-after-supply")
   }
 

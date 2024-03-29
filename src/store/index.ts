@@ -3,7 +3,7 @@ import { fetchGoodsInMachine, normalSubmit, submit } from "@/service"
 import { defineStore } from "pinia"
 import { showToast } from "vant"
 import { v4 as uuidV4 } from "uuid"
-import { initSN } from "@/utils"
+import { countRecommendAndAfterSupplyNum, initSN } from "@/utils"
 
 export const useShareData = defineStore("shareData", {
   state: (): State => {
@@ -125,19 +125,20 @@ export const useShareData = defineStore("shareData", {
         if (result?.head?.code != 200)
           throw new Error(result?.head?.desc ?? "服务器繁忙!")
         const nodeName = result?.body?.node
-        const list = result?.body?.list
+        let list = result?.body?.list as Goods[]
         this.nodeName = nodeName
 
         // 排序mdseTypeId1 == 1001  是饮料 等于其他零食
-        this.goodsList = Array.isArray(list)
+        list = Array.isArray(list)
           ? list.map(item => ({
               ...item,
               stock_temp: item?.stock ?? 0,
               recommend: 0,
               recommend_temp: 0,
-              // replenishmentStock_temp: item?.replenishmentStock ?? 0
             }))
           : []
+
+        this.goodsList = countRecommendAndAfterSupplyNum(list)
       } catch (error: any) {
         showToast({
           message: error?.message,

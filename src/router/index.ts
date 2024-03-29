@@ -59,7 +59,7 @@ function isSecretNodeRedirect(
   next()
 }
 router.beforeEach((to, _from, next) => {
-  window.document.title = `${to.meta?.title ?? ""}`
+  // window.document.title = `${to.meta?.title ?? ""}`
   isSecretNodeRedirect(to, next)
 })
 
