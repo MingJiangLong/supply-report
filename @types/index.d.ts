@@ -19,16 +19,28 @@ interface Goods {
   fullName: string
   price: number
   delete: boolean
-  stock: number
   replenishmentStock: number
+
   status?: string
+  
+  /** 用于标记是否被编辑过 */
   status2?: string
+
+  /** 页面系统库存展示字段 */
+  stock: number
+
+  /** 页面系统库存修改展示字段 */
   stock_temp: number
+
+  /** 用于页面推荐补货数展示 */
   recommend:number
+
+  /** 用于页面补货后库存展示 */
   recommend_temp:number
+
   // replenishmentStock_temp: number
   mdseTypeId1: number
-  /** 新版推荐补货数 */
+  
   lastStockNum:number 
 }
 

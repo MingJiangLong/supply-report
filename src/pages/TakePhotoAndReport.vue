@@ -42,6 +42,7 @@ import { ref } from "vue"
 import { useRouter } from "vue-router"
 import { Button, showToast } from "vant"
 import { initSN } from "@/utils"
+import { isProd } from "@/config"
 const shareData = useShareData()
 const router = useRouter()
 const submitLoading = ref(false)
@@ -87,6 +88,7 @@ async function onSubmit() {
       message: "提交成功,3s后返回首页!",
       type: "success",
     })
+    if (!isProd) return
     setTimeout(() => {
       shareData.clear()
       window?.ucloud?.postMessage?.(

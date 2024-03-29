@@ -99,6 +99,7 @@ import { useShareData } from "@/store"
 import { ref } from "vue"
 import { computed } from "vue"
 import PageContainer from "@/components/PageContainer.vue"
+import { isProd } from "@/config"
 const router = useRouter()
 const shareData = useShareData()
 const listRef = ref()
@@ -173,12 +174,17 @@ async function submitWhenSecretNode() {
   try {
     if (!isBtnAble.value) return
     submitting.value = true
-    await shareData.submitWhenNormalSupply();
+    if (shareData.isNormalSupply) {
+      await shareData.submitWhenNormalSupply();
+    } else {
+      await shareData.submitWhenCountSupply(1)
+    }
     showToast({
       message: "提交成功",
       type: "success",
     })
 
+    if (!isProd) return;
     setTimeout(() => {
       shareData.clear()
       window?.ucloud?.postMessage?.(
