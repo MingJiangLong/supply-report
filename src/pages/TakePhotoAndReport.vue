@@ -88,7 +88,7 @@ async function onSubmit() {
       message: "提交成功,3s后返回首页!",
       type: "success",
     })
-    if (!isProd) return
+    // if (!isProd) return
     setTimeout(() => {
       shareData.clear()
       window?.ucloud?.postMessage?.(

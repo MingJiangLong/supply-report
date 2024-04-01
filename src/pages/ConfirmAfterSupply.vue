@@ -184,7 +184,7 @@ async function submitWhenSecretNode() {
       type: "success",
     })
 
-    if (!isProd) return;
+    // if (!isProd) return;
     setTimeout(() => {
       shareData.clear()
       window?.ucloud?.postMessage?.(
