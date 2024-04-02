@@ -42,7 +42,7 @@ import { ref } from "vue"
 import { useRouter } from "vue-router"
 import { Button, showToast } from "vant"
 import { initSN } from "@/utils"
-import { isProd } from "@/config"
+// import { isProd } from "@/config"
 const shareData = useShareData()
 const router = useRouter()
 const submitLoading = ref(false)

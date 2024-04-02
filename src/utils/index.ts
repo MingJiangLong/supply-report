@@ -11,7 +11,7 @@ export function initNecessaryData() {
       vm: "99900990",
       out_trade_no: "99902380A20230209163729",
       loginName: "18576518892",
-      is_normal_supply: "false",
+      is_normal_supply: "true",
       node_type: "2",
     }
     Object.keys(temp).forEach((key: string) => {

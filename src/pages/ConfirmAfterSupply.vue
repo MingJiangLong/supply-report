@@ -99,7 +99,7 @@ import { useShareData } from "@/store"
 import { ref } from "vue"
 import { computed } from "vue"
 import PageContainer from "@/components/PageContainer.vue"
-import { isProd } from "@/config"
+// import { isProd } from "@/config"
 const router = useRouter()
 const shareData = useShareData()
 const listRef = ref()
@@ -299,7 +299,6 @@ footer {
   }
 
   .card-body {
-    flex: 1;
     margin: 5px 0;
   }
 }
