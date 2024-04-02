@@ -148,13 +148,13 @@ function onSearch(value: any) {
   searchValue.value = value;
   if (!shareData.goodsList.length) return;
   if (!searchValue.value) {
-    return listRef.value[0]?.scrollIntoView({ block: 'center' })
+    return listRef.value[0]?.scrollIntoViewIfNeeded()
   }
   const findIndex = shareData.goodsList.findIndex(item => {
     return item.fullName.includes(searchValue.value)
   })
   if (findIndex != -1) {
-    listRef.value[findIndex]?.scrollIntoView({ block: 'center' })
+    listRef.value[findIndex]?.scrollIntoViewIfNeeded()
   }
 }
 </script>

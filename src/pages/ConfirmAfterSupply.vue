@@ -159,13 +159,13 @@ function onSearch(value: any) {
   searchValue.value = value;
   if (!shareData.goodsList.length) return;
   if (!searchValue.value) {
-    return listRef.value[0]?.scrollIntoView({ block: 'center' })
+    return listRef.value[0]?.scrollIntoViewIfNeeded()
   }
   const findIndex = shareData.goodsList.findIndex(item => {
     return item.fullName.includes(searchValue.value)
   })
   if (findIndex != -1) {
-    listRef.value[findIndex]?.scrollIntoView({ block: 'center' })
+    listRef.value[findIndex]?.scrollIntoViewIfNeeded()
   }
 }
 
@@ -211,15 +211,10 @@ onMounted(() => {
 <style scoped lang="less">
 @img-size: 60px;
 
-main {
-  padding: 0 8px;
-}
+
 
 footer {
-  display: flex;
-  padding: 8px 21px 8px;
-  gap: 6px 14px;
-  font-size: 18px;
+
 
   &>button:first-child {
     background: #ffffff;
@@ -290,7 +285,6 @@ footer {
   display: flex;
   flex-direction: column;
   flex: 1;
-  height: 0;
   background: var(--ubox-page-bg);
 
   img {
